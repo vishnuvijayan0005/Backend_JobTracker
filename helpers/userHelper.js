@@ -1,3 +1,5 @@
+
+import Application from "../model/ApplicationSchema.js";
 import Company from "../model/CompanySchema.js";
 import Job from "../model/Jobschema.js";
 import User from "../model/User.js";
@@ -141,7 +143,7 @@ export const dbgetjobbyid=async(jobid)=>{
 export const dbgetcompanylist=async()=>{
 try {
     const companies=await Company.find()
-    // console.log(companies);
+  
     
     if(!companies){
         return{
@@ -165,3 +167,46 @@ try {
     }
 }
 }
+
+export const dbaddapplication = async (userId, jobId) => {
+  try {
+
+    const job = await Job.findById(jobId);
+
+
+    if (!job) {
+      return {
+        success: false,
+        message: "Job not found",
+      };
+    }
+
+    const application = await Application.create({
+      userId,
+      jobId,
+      companyId: job.company, 
+    });
+    await Job.findByIdAndUpdate(jobId, { applied: true }, { new: true });
+
+    return {
+      success: true,
+      message: "Application submitted successfully",
+      data: application,
+    };
+  } catch (error) {
+  
+    if (error.code === 11000) {
+      return {
+        success: false,
+        message: "You have already applied for this job",
+      };
+    }
+
+    return {
+      success: false,
+      message: "Something went wrong",
+      error,
+    };
+  }
+};
+

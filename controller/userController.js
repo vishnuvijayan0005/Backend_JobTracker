@@ -1,4 +1,5 @@
 import {
+  dbaddapplication,
   dbaddprofile,
   dbgetcompanylist,
   dbgetjobbyid,
@@ -95,3 +96,35 @@ try {
     return res.status(500).json({error:error})
 }
 }
+
+export const addapplication = async (req, res) => {
+  try {
+    const userID = req.user.id;
+    const jobID = req.params.id;
+
+    const result = await dbaddapplication(userID, jobID);
+
+    if (!result.success) {
+      // Decide status based on error type
+      switch (result.error) {
+        case "JOB_NOT_FOUND":
+          return res.status(404).json(result);
+
+        case "ALREADY_APPLIED":
+          return res.status(409).json(result);
+
+        default:
+          return res.status(400).json(result);
+      }
+    }
+
+    return res.status(201).json(result);
+
+  } catch (error) {
+    console.error("Add application error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
+  }
+};
