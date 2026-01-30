@@ -75,7 +75,7 @@ export const dbpostnewjob = async (job) => {
 };
 export const dbgetmyobs = async (companyid) => {
   try {
-    const jobs = await Job.find({ company: companyid }).lean();
+    const jobs = await Job.find({ company: companyid }).lean().sort({ createdAt: -1 });
 
     return {
       success: true,
@@ -114,5 +114,29 @@ export const dbgetcompanyprofile = async (id) => {
       success: false,
       message: "Error fetching company profile",
     };
+  }
+};
+
+
+export const dbupdatestatus=async(id,status)=>{
+   try {
+    const job = await Job.findByIdAndUpdate(
+      id,
+      { status },
+      { new: true }
+    );
+
+    if (!job) {
+      return { success: false, message: "Job not found" };
+    }
+
+    return {
+      success: true,
+      message: `Job status updated to ${status}`,
+      data: job,
+    };
+  } catch (error) {
+    console.error("DB update error:", error);
+    return { success: false, message: "Database error" };
   }
 };

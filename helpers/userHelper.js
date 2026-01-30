@@ -5,7 +5,10 @@ import UserProfile from "../model/UserProfileSchema.js";
 
 export const dbgetuserjobs = async () => {
   try {
-    const companydet = await Job.find();
+    const companydet = await Job.find({status:"Open"}).sort({ createdAt: -1 });
+console.log(companydet);
+
+    
     if (!companydet) {
       return {
         success: false,
