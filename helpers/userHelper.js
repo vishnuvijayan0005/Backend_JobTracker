@@ -1,4 +1,3 @@
-
 import Application from "../model/ApplicationSchema.js";
 import Company from "../model/CompanySchema.js";
 import Job from "../model/Jobschema.js";
@@ -7,10 +6,11 @@ import UserProfile from "../model/UserProfileSchema.js";
 
 export const dbgetuserjobs = async () => {
   try {
-    const companydet = await Job.find({status:"Open"}).sort({ createdAt: -1 });
-console.log(companydet);
+    const companydet = await Job.find({ status: "Open" }).sort({
+      createdAt: -1,
+    });
+    // console.log(companydet);
 
-    
     if (!companydet) {
       return {
         success: false,
@@ -46,11 +46,11 @@ export const dbaddprofile = async (profileData, userId) => {
   } = profileData;
 
   try {
-     const exist=await UserProfile.findOne({userId})
+    const exist = await UserProfile.findOne({ userId });
     console.log(exist);
-    
-    if(exist){
-    return {success:false,message:"already in db"}
+
+    if (exist) {
+      return { success: false, message: "already in db" };
     }
     await UserProfile.create({
       userId,
@@ -92,7 +92,7 @@ export const dbaddprofile = async (profileData, userId) => {
 
 export const dbgetuserprofile = async (id) => {
   const userprofile = await UserProfile.find({ userId: id });
-  console.log(userprofile);
+  // console.log(userprofile);
   try {
     if (!userprofile) {
       return {
@@ -115,78 +115,83 @@ export const dbgetuserprofile = async (id) => {
   }
 };
 
-
-export const dbgetjobbyid=async(jobid)=>{
-    try {
-        const jobData=await Job.findById(jobid)
-        console.log(jobData,"-------");
-        if(!jobData){
-            return{
-                success:false,
-                message:"not found"
-            }
-        }
-        else{
-            return{
-                success:true,
-                message:"fetched",
-                data:jobData
-            }
-        }
-    } catch (error) {
-        console.log(error);
-        
-    }
-}
-
-
-export const dbgetcompanylist=async()=>{
-try {
-    const companies=await Company.find()
-  
+export const dbgetjobbyid = async (jobid,userId) => {
+  try {
+    const jobData = await Job.findById(jobid);
+    console.log(jobData, "-------");
     
-    if(!companies){
-        return{
-            success:false,
-            message:"companies are empty"
-        }
+    if (!jobData) {
+      return {
+        success: false,
+        message: "not found",
+      };
 
+    } 
+
+    const application = await Application.findOne({
+      userId,
+      jobId:jobid,
+    });
+
+
+    const jobStatus = application ? application.status : "open";
+      return {
+        success: true,
+        message: "fetched",
+        data: jobData.toObject(),
+        jobStatus
+      };
+    
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const dbgetcompanylist = async () => {
+  try {
+    const companies = await Company.find();
+
+    if (!companies) {
+      return {
+        success: false,
+        message: "companies are empty",
+      };
+    } else {
+      return {
+        success: true,
+        message: "fetched companies",
+        data: companies,
+      };
     }
-    else{
-        return{
-            success:true,
-            message:"fetched companies",
-            data:companies
-        }
-    }
-} catch (error) {
+  } catch (error) {
     return {
-        success:false,
-        message:"something went wrong",
-        error:error
-    }
-}
-}
+      success: false,
+      message: "something went wrong",
+      error: error,
+    };
+  }
+};
 
 export const dbaddapplication = async (userId, jobId) => {
   try {
-
-    const job = await Job.findById(jobId);
-
-
-    if (!job) {
-      return {
-        success: false,
-        message: "Job not found",
-      };
+    if (!userId || !jobId) {
+      return { success: false, message: "Invalid user or job ID" };
     }
 
-    const application = await Application.create({
+    const job = await Job.findById(jobId);
+    if (!job) {
+      return { success: false, message: "Job not found" };
+    }
+
+    const resume = await UserProfile.findOne({ userId });
+    const applicationData = {
       userId,
       jobId,
-      companyId: job.company, 
-    });
-    await Job.findByIdAndUpdate(jobId, { applied: true }, { new: true });
+      companyId: job.company,
+    };
+    if (resume?.resumeUrl) applicationData.resumeUrl = resume.resumeUrl;
+
+    const application = await Application.create(applicationData);
 
     return {
       success: true,
@@ -194,7 +199,7 @@ export const dbaddapplication = async (userId, jobId) => {
       data: application,
     };
   } catch (error) {
-  
+    console.error("Error creating application:", error);
     if (error.code === 11000) {
       return {
         success: false,
@@ -206,6 +211,64 @@ export const dbaddapplication = async (userId, jobId) => {
       success: false,
       message: "Something went wrong",
       error,
+    };
+  }
+};
+
+
+export const dbgetappliedjobs = async (userId) => {
+  try {
+    const applications = await Application.find({ userId })
+      .populate("jobId")
+      .sort({ createdAt: -1 });
+
+    const formattedJobs = applications.map((app) => ({
+      id: app.jobId?._id?.toString() || null,
+      title: app.jobId?.title || "",
+      companyName: app.jobId?.companyName || "",
+      location: app.jobId?.location || "",
+      appliedAt: app.appliedAt,
+      status: app.status || "applied",
+    }));
+
+    return {
+      success: true,
+      message: "Applied jobs fetched successfully",
+      data: formattedJobs,
+    };
+  } catch (error) {
+    console.error(error);
+    return {
+      success: false,
+      message: "Failed to fetch applied jobs",
+    };
+  }
+};
+
+export const dbdeletejobapplication = async (userId, jobId) => {
+  try {
+    const deletedApplication = await Application.findOneAndDelete({
+      userId,
+      jobId,
+    });
+    // await Job.findByIdAndUpdate(jobId, { applied: false }, { new: true });
+    if (!deletedApplication) {
+      return {
+        success: false,
+        message: "Application not found or already withdrawn",
+      };
+    }
+
+    return {
+      success: true,
+      message: "Application withdrawn successfully",
+      data: deletedApplication,
+    };
+  } catch (error) {
+    console.error(error);
+    return {
+      success: false,
+      message: "Failed to withdraw application",
     };
   }
 };

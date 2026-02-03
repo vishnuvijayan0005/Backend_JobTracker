@@ -1,7 +1,7 @@
 import express from "express";
 
 import { protect } from "../middleware/protect.js";
-import { addapplication, addprofile, getcompanylist, getjobbyid, getjobs, getuserprofile } from "../controller/userController.js";
+import { addapplication, addprofile, deletejobapplication, getappliedjobs, getcompanylist, getjobbyid, getjobs, getuserprofile } from "../controller/userController.js";
 import upload from "../middleware/upload.js";
 
 const router = express.Router();
@@ -20,4 +20,6 @@ router.post("/addprofile",protect, upload.fields([
   router.get("/jobsdetails/:id",protect,getjobbyid)
   router.get("/companieslist",protect,getcompanylist)
   router.post("/addapplication/:id",protect,addapplication)
+  router.get("/appliedjobs",protect,getappliedjobs)
+  router.delete("/withdrawapplication/:id",protect,deletejobapplication)
 export default router;

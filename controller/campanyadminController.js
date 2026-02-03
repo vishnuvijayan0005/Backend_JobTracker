@@ -1,7 +1,9 @@
 import {
+  dbgetapplicants,
   dbgetcompanyprofile,
   dbgetmyobs,
   dbpostnewjob,
+  dbupdateApplicationStatus,
   dbupdatestatus,
 } from "../helpers/comapanyadminHelper.js";
 import Company from "../model/CompanySchema.js";
@@ -57,3 +59,36 @@ const {status}=req.body
     return res.status(500).json({ success: false, message: "Server error" });
   }
 };
+
+export const getapplicants=async(req,res)=>{
+  const userID=req.user.id
+  try {
+    const result = await dbgetapplicants(userID);
+
+    if (result.success) {
+      return res.status(200).json(result);
+    } else {
+      return res.status(404).json(result);
+    }
+  } catch (err) {
+    console.error("Update status error:", err);
+    return res.status(500).json({ success: false, message: "Server error" });
+  }
+}
+
+export const updateApplicationStatus=async(req,res)=>{
+ 
+const {applicationId,status}=req.body
+  try {
+    const result = await dbupdateApplicationStatus(applicationId, status);
+
+    if (result.success) {
+      return res.status(200).json(result);
+    } else {
+      return res.status(404).json(result);
+    }
+  } catch (err) {
+    console.error("Update status error:", err);
+    return res.status(500).json({ success: false, message: "Server error" });
+  }
+}

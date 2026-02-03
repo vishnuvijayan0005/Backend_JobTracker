@@ -1,6 +1,8 @@
 import {
   dbaddapplication,
   dbaddprofile,
+  dbdeletejobapplication,
+  dbgetappliedjobs,
   dbgetcompanylist,
   dbgetjobbyid,
   dbgetuserjobs,
@@ -19,7 +21,7 @@ export const getjobs = async (req, res) => {
 export const addprofile = async (req, res) => {
   try {
     const userId = req.user.id;
-    console.log(req.body);
+    // console.log(req.body);
 
    
     const location =
@@ -58,7 +60,7 @@ export const addprofile = async (req, res) => {
 
 export const getuserprofile = async (req, res) => {
   const userID = req.user.id;
-  console.log(userID);
+  // console.log(userID);
 
   const result = await dbgetuserprofile(userID);
   if (result.success) {
@@ -69,7 +71,8 @@ export const getuserprofile = async (req, res) => {
 };
 export const getjobbyid=async(req,res)=>{
     const jobid=req.params.id
-    const result=await dbgetjobbyid(jobid)
+    const userid=req.user.id
+    const result=await dbgetjobbyid(jobid,userid)
 
     
     if(result.success){
@@ -105,7 +108,7 @@ export const addapplication = async (req, res) => {
     const result = await dbaddapplication(userID, jobID);
 
     if (!result.success) {
-      // Decide status based on error type
+     
       switch (result.error) {
         case "JOB_NOT_FOUND":
           return res.status(404).json(result);
@@ -128,3 +131,47 @@ export const addapplication = async (req, res) => {
     });
   }
 };
+
+export const getappliedjobs = async (req, res) => {
+  try {
+
+    
+    const userID = req.user.id;
+
+    const result = await dbgetappliedjobs(userID);
+
+    if (!result.success) {
+      return res.status(400).json(result);
+    }
+
+    return res.status(200).json(result);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch applied jobs",
+    });
+  }
+};
+
+export const deletejobapplication=async(req,res)=>{
+  try {
+
+    
+    const userID = req.user.id;
+    const jobID=req.params.id;
+    const result = await dbdeletejobapplication(userID,jobID);
+
+    if (!result.success) {
+      return res.status(400).json(result);
+    }
+
+    return res.status(200).json(result);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch applied jobs",
+    });
+  }
+}

@@ -21,8 +21,22 @@ const ApplicationSchema = new mongoose.Schema(
       required: true,
     },
 
-   
-
+    Applicationstatus: {
+      type: String,
+      enum: [
+        "applied",
+        "reviewing",
+        "shortlisted",
+        "interview",
+        "rejected",
+        "hired",
+      ],
+      default: "applied",
+    },
+ resumeUrl: {
+      type: String,
+     
+    },
    
     status: {
       type: String,

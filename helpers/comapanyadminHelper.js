@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 import Job from "../model/Jobschema.js";
 import User from "../model/User.js";
 import Company from "../model/CompanySchema.js";
+import Application from "../model/ApplicationSchema.js";
 
 export const dbpostnewjob = async (job) => {
   try {
@@ -93,7 +94,7 @@ export const dbgetmyobs = async (companyid) => {
 export const dbgetcompanyprofile = async (id) => {
   try {
     const user = await User.findById(id).populate("companyid");
-    console.log(user.companyid);
+    // console.log(user.companyid);
 
     if (!user.companyid) {
       return {
@@ -140,3 +141,69 @@ export const dbupdatestatus=async(id,status)=>{
     return { success: false, message: "Database error" };
   }
 };
+
+export const dbgetapplicants = async (companyId) => {
+  try {
+    console.log(companyId, "------");
+
+    const applications = await Application.find({ companyId })
+      .populate("jobId", "_id title")
+      .populate("userId", "_id name email phone")
+      .sort({ createdAt: -1 });
+
+
+    const formattedJobs = applications.map((app) => ({
+      applicationId: app._id,
+      jobId: app.jobId?._id?.toString() || null,
+      jobTitle: app.jobId?.title || "",
+      applicant: {
+        id: app.userId?._id,
+        name: app.userId?.name,
+        email: app.userId?.email,
+        phone: app.userId?.phone,
+      },
+      appliedAt: app.appliedAt,
+      status: app.Applicationstatus ,
+      resumeUrl: app.resumeUrl,
+    }));
+
+
+    return {
+      success: true,
+      message: "Applicants fetched successfully",
+      data: formattedJobs,
+    };
+  } catch (error) {
+    console.error(error);
+    return {
+      success: false,
+      message: "Failed to fetch applicants",
+    };
+  }
+};
+export const dbupdateApplicationStatus=async(id,status)=>{
+   try {
+   
+    
+    const job = await Application.findByIdAndUpdate(
+      id,
+      { Applicationstatus:status },
+      { new: true }
+    );
+    console.log(job);
+    
+
+    if (!job) {
+      return { success: false, message: "Job not found" };
+    }
+
+    return {
+      success: true,
+      message: `Job status updated to ${status}`,
+      data: job,
+    };
+  } catch (error) {
+    console.error("DB update error:", error);
+    return { success: false, message: "Database error" };
+  }
+}

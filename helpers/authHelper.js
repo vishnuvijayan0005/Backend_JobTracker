@@ -37,7 +37,7 @@ export const register = async (userData) => {
 
 export const dbcompany = async (companyData) => {
   // console.log(companyData);
-console.log(companyData);
+// console.log(companyData);
 
   const {
     companyName,
