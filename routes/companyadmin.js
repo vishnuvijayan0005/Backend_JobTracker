@@ -1,6 +1,6 @@
 import express from 'express';
 import { protect } from '../middleware/protect.js';
-import { getapplicants, getcompanyprofile, myjobs, postnewjob, updateApplicationStatus, updatestatus } from '../controller/campanyadminController.js';
+import { addinterviewschedule, getapplicants, getcompanyprofile, getinterviewapplicants, getshortlisted, myjobs, postnewjob, updateApplicationStatus, updateinterview, updatestatus } from '../controller/campanyadminController.js';
 const router = express.Router();
 
 router.get('/', (req, res) => {
@@ -13,4 +13,8 @@ router.get("/profile/:id",protect,getcompanyprofile)
 router.patch("/job/:id/status",protect,updatestatus)
 router.get("/getapplicants",protect,getapplicants)
 router.patch("/updateApplicationStatus",protect,updateApplicationStatus)
+router.get("/getshortlisted",protect,getshortlisted)
+router.post("/schedule-interview",protect,addinterviewschedule)
+router.get("/getinterviewapplicants",protect,getinterviewapplicants)
+router.patch("/update-interview-result",protect,updateinterview)
 export default router;

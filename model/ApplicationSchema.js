@@ -33,11 +33,10 @@ const ApplicationSchema = new mongoose.Schema(
       ],
       default: "applied",
     },
- resumeUrl: {
+    resumeUrl: {
       type: String,
-     
     },
-   
+
     status: {
       type: String,
       enum: [
@@ -56,15 +55,10 @@ const ApplicationSchema = new mongoose.Schema(
       default: Date.now,
     },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
-
-ApplicationSchema.index(
-  { jobId: 1, userId: 1 },
-  { unique: true }
-);
-
+ApplicationSchema.index({ jobId: 1, userId: 1 }, { unique: true });
 
 const Application = mongoose.model("Application", ApplicationSchema);
 export default Application;

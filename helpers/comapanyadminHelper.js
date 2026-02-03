@@ -4,6 +4,7 @@ import Job from "../model/Jobschema.js";
 import User from "../model/User.js";
 import Company from "../model/CompanySchema.js";
 import Application from "../model/ApplicationSchema.js";
+import Interview from "../model/InterviewSchema.js";
 
 export const dbpostnewjob = async (job) => {
   try {
@@ -16,7 +17,8 @@ export const dbpostnewjob = async (job) => {
       };
     }
 
-    const companyUser = await User.findById(companyUserId).populate("companyid");
+    const companyUser =
+      await User.findById(companyUserId).populate("companyid");
 
     if (!companyUser || !companyUser.companyid) {
       return {
@@ -76,7 +78,9 @@ export const dbpostnewjob = async (job) => {
 };
 export const dbgetmyobs = async (companyid) => {
   try {
-    const jobs = await Job.find({ company: companyid }).lean().sort({ createdAt: -1 });
+    const jobs = await Job.find({ company: companyid })
+      .lean()
+      .sort({ createdAt: -1 });
 
     return {
       success: true,
@@ -118,14 +122,9 @@ export const dbgetcompanyprofile = async (id) => {
   }
 };
 
-
-export const dbupdatestatus=async(id,status)=>{
-   try {
-    const job = await Job.findByIdAndUpdate(
-      id,
-      { status },
-      { new: true }
-    );
+export const dbupdatestatus = async (id, status) => {
+  try {
+    const job = await Job.findByIdAndUpdate(id, { status }, { new: true });
 
     if (!job) {
       return { success: false, message: "Job not found" };
@@ -144,13 +143,12 @@ export const dbupdatestatus=async(id,status)=>{
 
 export const dbgetapplicants = async (companyId) => {
   try {
-    console.log(companyId, "------");
+    // console.log(companyId, "------");
 
     const applications = await Application.find({ companyId })
       .populate("jobId", "_id title")
       .populate("userId", "_id name email phone")
       .sort({ createdAt: -1 });
-
 
     const formattedJobs = applications.map((app) => ({
       applicationId: app._id,
@@ -163,10 +161,9 @@ export const dbgetapplicants = async (companyId) => {
         phone: app.userId?.phone,
       },
       appliedAt: app.appliedAt,
-      status: app.Applicationstatus ,
+      status: app.Applicationstatus,
       resumeUrl: app.resumeUrl,
     }));
-
 
     return {
       success: true,
@@ -181,17 +178,14 @@ export const dbgetapplicants = async (companyId) => {
     };
   }
 };
-export const dbupdateApplicationStatus=async(id,status)=>{
-   try {
-   
-    
+export const dbupdateApplicationStatus = async (id, status) => {
+  try {
     const job = await Application.findByIdAndUpdate(
       id,
-      { Applicationstatus:status },
-      { new: true }
+      { Applicationstatus: status },
+      { new: true },
     );
-    console.log(job);
-    
+    // console.log(job);
 
     if (!job) {
       return { success: false, message: "Job not found" };
@@ -206,4 +200,159 @@ export const dbupdateApplicationStatus=async(id,status)=>{
     console.error("DB update error:", error);
     return { success: false, message: "Database error" };
   }
-}
+};
+
+export const dbgetshortlisted = async (companyId) => {
+  try {
+    // console.log(companyId, "------");
+
+    const applications = await Application.find({
+      companyId,
+      Applicationstatus: "shortlisted",
+    })
+      .populate("jobId", "_id title")
+      .populate("userId", "_id name email phone")
+      .sort({ createdAt: -1 });
+    // console.log(applications);
+
+    const formattedJobs = applications.map((app) => ({
+      applicationId: app._id,
+      jobId: app.jobId?._id?.toString() || null,
+      jobTitle: app.jobId?.title || "",
+      applicant: {
+        id: app.userId?._id,
+        name: app.userId?.name,
+        email: app.userId?.email,
+        phone: app.userId?.phone,
+      },
+      appliedAt: app.appliedAt,
+      status: app.Applicationstatus,
+      resumeUrl: app.resumeUrl,
+    }));
+
+    return {
+      success: true,
+      message: "Applicants fetched successfully",
+      data: formattedJobs,
+    };
+  } catch (error) {
+    console.error(error);
+    return {
+      success: false,
+      message: "Failed to fetch applicants",
+    };
+  }
+};
+
+export const dbaddinterview = async (companyId, interviewData) => {
+  try {
+    const { applicationId, date, time, mode, location, meetingLink, notes } =
+      interviewData;
+
+    if (!applicationId || !date || !time || !mode) {
+      return {
+        success: false,
+        message: "Missing required interview fields",
+      };
+    }
+
+    const interview = await Interview.create({
+      companyId,
+      applicationId,
+      date,
+      time,
+      mode,
+      location: mode === "offline" ? location : undefined,
+      meetingLink: mode === "online" ? meetingLink : undefined,
+      notes,
+      status: "scheduled",
+    });
+
+    return {
+      success: true,
+      message: "Interview scheduled successfully",
+      data: interview,
+    };
+  } catch (error) {
+    console.error("Add interview error:", error);
+    return {
+      success: false,
+      message: "Failed to schedule interview",
+    };
+  }
+};
+
+export const dbgetinterviewapplicants = async (companyId) => {
+  try {
+    // console.log(companyId, "------");
+
+    const applications = await Application.find({
+      companyId,
+      Applicationstatus: "interview",
+    })
+      .populate("jobId", "_id title")
+      .populate("userId", "_id name email phone")
+      .sort({ createdAt: -1 });
+    // console.log(applications);
+
+    const formattedJobs = applications.map((app) => ({
+      applicationId: app._id,
+      jobId: app.jobId?._id?.toString() || null,
+      jobTitle: app.jobId?.title || "",
+      applicant: {
+        id: app.userId?._id,
+        name: app.userId?.name,
+        email: app.userId?.email,
+        phone: app.userId?.phone,
+      },
+      appliedAt: app.appliedAt,
+      status: app.Applicationstatus,
+      resumeUrl: app.resumeUrl,
+    }));
+
+    return {
+      success: true,
+      message: "Applicants fetched successfully",
+      data: formattedJobs,
+    };
+  } catch (error) {
+    console.error(error);
+    return {
+      success: false,
+      message: "Failed to fetch applicants",
+    };
+  }
+};
+
+export const dbupdateinterview = async (data) => {
+  const { applicationId, result, resultNote } = data;
+  console.log(data);
+  
+  try {
+    const job = await Interview.findOneAndUpdate(
+      {applicationId},
+      { interviewResult: result, interviewResultNote: resultNote || " " ,status:"completed"},
+      { new: true },
+    );
+    console.log(job);
+
+    const update = await Application.findByIdAndUpdate(applicationId, {
+      Applicationstatus: result,
+    });
+
+    console.log(update);
+
+    if (!job) {
+      return { success: false, message: "Job not found" };
+    }
+
+    return {
+      success: true,
+      message: `Job status updated to ${result}`,
+      // data: job,
+    };
+  } catch (error) {
+    console.error("DB update error:", error);
+    return { success: false, message: "Database error" };
+  }
+};

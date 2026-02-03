@@ -47,7 +47,7 @@ export const dbaddprofile = async (profileData, userId) => {
 
   try {
     const exist = await UserProfile.findOne({ userId });
-    console.log(exist);
+    // console.log(exist);
 
     if (exist) {
       return { success: false, message: "already in db" };
@@ -118,7 +118,7 @@ export const dbgetuserprofile = async (id) => {
 export const dbgetjobbyid = async (jobid,userId) => {
   try {
     const jobData = await Job.findById(jobid);
-    console.log(jobData, "-------");
+    // console.log(jobData, "-------");
     
     if (!jobData) {
       return {
@@ -228,7 +228,7 @@ export const dbgetappliedjobs = async (userId) => {
       companyName: app.jobId?.companyName || "",
       location: app.jobId?.location || "",
       appliedAt: app.appliedAt,
-      status: app.status || "applied",
+      status: app.Applicationstatus || "applied",
     }));
 
     return {
