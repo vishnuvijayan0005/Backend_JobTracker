@@ -5,6 +5,7 @@ import User from "../model/User.js";
 import Company from "../model/CompanySchema.js";
 import Application from "../model/ApplicationSchema.js";
 import Interview from "../model/InterviewSchema.js";
+import { application } from "express";
 
 export const dbpostnewjob = async (job) => {
   try {
@@ -334,13 +335,13 @@ export const dbupdateinterview = async (data) => {
       { interviewResult: result, interviewResultNote: resultNote || " " ,status:"completed"},
       { new: true },
     );
-    console.log(job);
+    // console.log(job);
 
     const update = await Application.findByIdAndUpdate(applicationId, {
       Applicationstatus: result,
     });
 
-    console.log(update);
+    // console.log(update);
 
     if (!job) {
       return { success: false, message: "Job not found" };
@@ -354,5 +355,248 @@ export const dbupdateinterview = async (data) => {
   } catch (error) {
     console.error("DB update error:", error);
     return { success: false, message: "Database error" };
+  }
+};
+export const dbgetcompanydashboard = async (userID) => {
+  try {
+    /* ================= JOBS ================= */
+    const jobs = await Job.find(
+      { company: userID },
+      {
+        _id: 1,
+        title: 1,
+        jobType: 1,
+        status: 1,
+        createdAt: 1,
+      }
+    ).sort({ createdAt: -1 });
+
+    const jobIds = jobs.map(job => job._id);
+
+    const totalActiveJobs = jobs.filter(
+      job => job.status === "Open"
+    ).length;
+
+   
+    const applicationStats = await Application.aggregate([
+      { $match: { jobId: { $in: jobIds } } },
+      {
+        $group: {
+          _id: null,
+          totalApplicants: { $sum: 1 },
+          shortlisted: {
+            $sum: {
+              $cond: [{ $eq: ["$Applicationstatus", "shortlisted"] }, 1, 0],
+            },
+          },
+          rejected: {
+            $sum: {
+              $cond: [{ $eq: ["$Applicationstatus", "rejected"] }, 1, 0],
+            },
+          },
+          hired: {
+            $sum: {
+              $cond: [{ $eq: ["$Applicationstatus", "hired"] }, 1, 0],
+            },
+          },
+        },
+      },
+    ]);
+
+    const stats = applicationStats[0] || {
+      totalApplicants: 0,
+      shortlisted: 0,
+      rejected: 0,
+      hired: 0,
+    };
+
+
+    return {
+      success: true,
+      message: "Company dashboard data fetched",
+      data: {
+        totalJobs: jobs.length,
+        totalActiveJobs,
+        totalApplicants: stats.totalApplicants,
+        shortlistedCandidates: stats.shortlisted,
+        rejectedCandidates: stats.rejected,
+        hiredCandidates: stats.hired,
+        jobs,
+      },
+    };
+
+  } catch (error) {
+    return {
+      success: false,
+      message: "Error fetching dashboard data",
+      error,
+    };
+  }
+};
+
+export const dbgetjobbyidbycompany = async (jobid, userId) => {
+  try {
+    /* ================= JOB ================= */
+    const jobData = await Job.findById(jobid);
+
+    if (!jobData) {
+      return {
+        success: false,
+        message: "Job not found",
+      };
+    }
+
+    /* ================= APPLICATIONS ================= */
+    const applications = await Application.find({
+      jobId: jobid,
+      companyId: userId,
+    });
+
+
+ 
+    const totalApplicants = applications.length;
+
+    const statusCounts = {
+      applied: 0,
+      shortlisted: 0,
+      hired: 0,
+      rejected: 0,
+    };
+
+    applications.forEach((app) => {
+      if (statusCounts[app.Applicationstatus] !== undefined) {
+        statusCounts[app.Applicationstatus]++;
+      }
+    });
+
+    /* ================= RESPONSE ================= */
+    return {
+      success: true,
+      message: "Fetched job details",
+      data: {
+        ...jobData.toObject(),
+        totalApplicants,
+        applicantsBreakdown: statusCounts,
+      },
+    };
+  } catch (error) {
+    console.error("dbgetjobbyidbycompany error:", error);
+    return {
+      success: false,
+      message: "Something went wrong",
+    };
+  }
+};
+
+
+export const dbupdatejobdetails = async (jobid, userid, jobData) => {
+  try {
+    const job = await Job.findOne({
+      _id: jobid,
+      company: userid,
+    });
+
+    if (!job) {
+      return {
+        success: false,
+        message: "Job not found or unauthorized",
+      };
+    }
+
+    // Fields allowed to update (matches frontend)
+    const allowedFields = [
+      "title",
+      "location",
+      "jobType",
+      "salary",
+      "description",
+      "requirements",
+      "qualifications",
+      "benefits",
+      "seniorityLevel",
+      "interviewProcess",
+      "experience",
+      "skills",
+      "tags",
+      "status",
+    ];
+
+    // Update only allowed fields
+    allowedFields.forEach((field) => {
+      if (jobData[field] !== undefined) {
+        job[field] = jobData[field];
+      }
+    });
+
+    await job.save();
+
+    return {
+      success: true,
+      message: "Job details updated successfully",
+      data: job.toObject(),
+    };
+  } catch (error) {
+    console.error("dbupdatejobdetails error:", error);
+    return {
+      success: false,
+      message: "Failed to update job details",
+    };
+  }
+};
+export const dbupdatecompanyprofile = async (userId, profileData) => {
+  try {
+ 
+
+    const companyData = profileData.company;
+
+    if (!companyData) {
+      return {
+        success: false,
+        message: "No company data provided",
+      };
+    }
+
+    const company = await Company.findOne({
+      _id: companyData._id,
+    });
+
+    if (!company) {
+      return {
+        success: false,
+        message: "Company not found or unauthorized",
+      };
+    }
+
+    
+    const allowedFields = [
+      "companyName",
+      "Companylocation",
+      "phone",
+      "email",
+      "siteId",
+      "Companytype",
+      "description",
+      "logo",
+    ];
+
+    allowedFields.forEach((field) => {
+      if (companyData[field] !== undefined) {
+        company[field] = companyData[field];
+      }
+    });
+
+    await company.save();
+
+    return {
+      success: true,
+      message: "Company profile updated successfully",
+      data: company.toObject(),
+    };
+  } catch (error) {
+    console.error("dbupdatecompanyprofile error:", error);
+    return {
+      success: false,
+      message: "Failed to update company profile",
+    };
   }
 };

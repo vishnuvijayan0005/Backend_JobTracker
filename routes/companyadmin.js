@@ -1,6 +1,6 @@
 import express from 'express';
 import { protect } from '../middleware/protect.js';
-import { addinterviewschedule, getapplicants, getcompanyprofile, getinterviewapplicants, getshortlisted, myjobs, postnewjob, updateApplicationStatus, updateinterview, updatestatus } from '../controller/campanyadminController.js';
+import { addinterviewschedule, getapplicants, getcompanydashboard, getCompanyDashboardsearch, getcompanyprofile, getinterviewapplicants, getjobbyidbycompany, getshortlisted, myjobs, postnewjob, updateApplicationStatus, updatecompanyprofile, updateinterview, updatejobdetails, updatestatus } from '../controller/campanyadminController.js';
 const router = express.Router();
 
 router.get('/', (req, res) => {
@@ -17,4 +17,10 @@ router.get("/getshortlisted",protect,getshortlisted)
 router.post("/schedule-interview",protect,addinterviewschedule)
 router.get("/getinterviewapplicants",protect,getinterviewapplicants)
 router.patch("/update-interview-result",protect,updateinterview)
+router.get("/getcompanydashboard",protect,getcompanydashboard)
+router.get("/fetchdashboardsearch",protect,getCompanyDashboardsearch)
+ router.get("/jobsdetails/:id",protect,getjobbyidbycompany)
+ router.put("/editjob/:id",protect,updatejobdetails)
+ router.put("/editprofile",protect,updatecompanyprofile)
+ 
 export default router;
