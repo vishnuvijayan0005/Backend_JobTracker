@@ -199,14 +199,14 @@ export const getCompanyDashboardsearch = async (req, res) => {
       ];
     }
 
-    const jobs = await Job.find(query)
+    const jobsdata = await Job.find(query)
       .select("title jobType status createdAt")
       .sort({ createdAt: -1 });
 
     return res.json({
       success: true,
       data: {
-        jobs,
+        jobsdata,
       },
     });
   } catch (error) {
@@ -260,3 +260,47 @@ export const updatecompanyprofile=async(req,res)=>{
     }
   
 }
+
+export const fetchSearch = async (req, res) => {
+  try {
+    const search = (req.query.search || "").trim();
+    const type = req.query.type;
+
+
+
+
+    const query = {
+      status: "Open", 
+    };
+
+  
+    if (search) {
+      query.$or = [
+        { title: { $regex: search, $options: "i" } },
+        { companyName: { $regex: search, $options: "i" } },
+        { location: { $regex: search, $options: "i" } },
+      ];
+    }
+
+
+    if (type) {
+      query.jobType = type;
+    }
+    const jobs = await Job.find(query)
+      .select("title companyName location jobType salary")
+      .sort({ createdAt: -1 })
+      .limit(20); 
+// console.log(jobs);
+
+    return res.json({
+      success: true,
+      data: jobs,
+    });
+  } catch (error) {
+    console.error("User job search error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch jobs",
+    });
+  }
+};
