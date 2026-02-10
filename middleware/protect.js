@@ -14,7 +14,7 @@ export const protect = (req, res, next) => {
     if (!token) {
       return res.status(401).json({ success:false,message: "Not authenticated" });
     }
-
+ 
     // 2️⃣ Verify token
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 

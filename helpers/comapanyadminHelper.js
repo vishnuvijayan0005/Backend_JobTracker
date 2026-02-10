@@ -5,10 +5,11 @@ import User from "../model/User.js";
 import Company from "../model/CompanySchema.js";
 import Application from "../model/ApplicationSchema.js";
 import Interview from "../model/InterviewSchema.js";
-import { application } from "express";
 
 export const dbpostnewjob = async (job) => {
   try {
+    console.log("JOB DATA:", job);
+
     const companyUserId = job.company;
 
     if (!mongoose.Types.ObjectId.isValid(companyUserId)) {
@@ -18,8 +19,9 @@ export const dbpostnewjob = async (job) => {
       };
     }
 
-    const companyUser =
-      await User.findById(companyUserId).populate("companyid");
+    const companyUser = await User
+      .findById(companyUserId)
+      .populate("companyid");
 
     if (!companyUser || !companyUser.companyid) {
       return {
@@ -28,37 +30,33 @@ export const dbpostnewjob = async (job) => {
       };
     }
 
-    const newJob = job.newJob;
-
     const createdJob = await Job.create({
-      title: newJob.title,
-      description: newJob.description,
-      requirements: newJob.requirements,
-      qualifications: newJob.qualifications,
-      interviewProcess: newJob.interviewProcess,
+      title: job.title,
+      description: job.description,
+      requirements: job.requirements,
+      qualifications: job.qualifications,
+      interviewProcess: job.interviewProcess,
 
-      location: newJob.location,
-      experience: newJob.experience,
-      jobType: newJob.jobType,
-      salary: newJob.salary,
+      location: job.location,
+      experience: job.experience,
+      jobMode: job.jobMode,
+      jobType: job.jobType,
+      salary: job.salary,
 
-      seniorityLevel: newJob.seniorityLevel,
+      seniorityLevel: job.seniorityLevel,
 
-      // convert comma-separated strings → arrays
-      skills: newJob.skills
-        ?.split(",")
-        .map((s) => s.trim())
-        .filter(Boolean),
+      // already arrays → keep as-is
+      skills: Array.isArray(job.skills)
+        ? job.skills
+        : job.skills?.split(",").map(s => s.trim()),
 
-      tags: newJob.tags
-        ?.split(",")
-        .map((t) => t.trim())
-        .filter(Boolean),
+      tags: Array.isArray(job.tags)
+        ? job.tags
+        : job.tags?.split(",").map(t => t.trim()),
 
-      benefits: newJob.benefits
-        ?.split(",")
-        .map((b) => b.trim())
-        .filter(Boolean),
+      benefits: Array.isArray(job.benefits)
+        ? job.benefits
+        : job.benefits?.split(",").map(b => b.trim()),
 
       company: companyUserId,
       companyName: companyUser.companyid.companyName,
@@ -125,11 +123,24 @@ export const dbgetcompanyprofile = async (id) => {
 
 export const dbupdatestatus = async (id, status) => {
   try {
-    const job = await Job.findByIdAndUpdate(id, { status }, { new: true });
+    // 1️⃣ Fetch job first
+    const job = await Job.findById(id);
 
     if (!job) {
       return { success: false, message: "Job not found" };
     }
+
+    // 2️⃣ Block if admin force-closed
+    if (job.forcedclose === true) {
+      return {
+        success: false,
+        message: "Admin has closed this job. Please contact admin.",
+      };
+    }
+
+    // 3️⃣ Update status
+    job.status = status;
+    await job.save();
 
     return {
       success: true,
@@ -141,6 +152,7 @@ export const dbupdatestatus = async (id, status) => {
     return { success: false, message: "Database error" };
   }
 };
+
 
 export const dbgetapplicants = async (companyId) => {
   try {
@@ -508,6 +520,7 @@ export const dbupdatejobdetails = async (jobid, userid, jobData) => {
       "title",
       "location",
       "jobType",
+      "jobMode",
       "salary",
       "description",
       "requirements",

@@ -54,6 +54,7 @@ export const getcompanyprofile = async (req, res) => {
 
 
 export const updatestatus=async(req,res)=>{
+
 const id=req.params.id
 const {status}=req.body
   try {
@@ -62,7 +63,11 @@ const {status}=req.body
     if (result.success) {
       return res.status(200).json(result);
     } else {
-      return res.status(404).json(result);
+ return res.status(403).json({
+  success: false,
+  message: "Admin has closed this job"
+});
+
     }
   } catch (err) {
     console.error("Update status error:", err);
@@ -265,15 +270,13 @@ export const fetchSearch = async (req, res) => {
   try {
     const search = (req.query.search || "").trim();
     const type = req.query.type;
-
-
-
+    const jobMode = req.query.jobMode; 
 
     const query = {
-      status: "Open", 
+      status: "Open",
     };
 
-  
+    // 🔍 Search filter
     if (search) {
       query.$or = [
         { title: { $regex: search, $options: "i" } },
@@ -282,15 +285,20 @@ export const fetchSearch = async (req, res) => {
       ];
     }
 
-
+    // 🧑‍💼 Job type filter
     if (type) {
       query.jobType = type;
     }
+
+    // 🏠 Job mode filter (Remote / Hybrid / Onsite)
+    if (jobMode) {
+      query.jobMode = jobMode;
+    }
+
     const jobs = await Job.find(query)
-      .select("title companyName location jobType salary")
+      .select("title companyName location jobType jobMode salary") // 🔹 INCLUDED
       .sort({ createdAt: -1 })
-      .limit(20); 
-// console.log(jobs);
+      .limit(20);
 
     return res.json({
       success: true,
@@ -304,3 +312,4 @@ export const fetchSearch = async (req, res) => {
     });
   }
 };
+

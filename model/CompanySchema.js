@@ -34,6 +34,10 @@ const CompanySchema = new mongoose.Schema({
   },
   isDeleted:{
     type:Boolean
+  },
+  userId:{
+    type:mongoose.Schema.Types.ObjectId,
+    ref:"User"
   }
 });
 

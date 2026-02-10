@@ -5,6 +5,7 @@ import {
   dbgetappliedjobs,
   dbgetcompanylist,
   dbgetjobbyid,
+  dbgetnonuserjobbyid,
   dbgetuserjobs,
   dbgetuserprofile,
 } from "../helpers/userHelper.js";
@@ -88,6 +89,8 @@ export const getjobbyid=async(req,res)=>{
 export const getcompanylist=async(req,res)=>{
 try {
     const result=await dbgetcompanylist()
+
+    
     if(!result.success){
         return res.status(404).json(result)
     }
@@ -174,4 +177,18 @@ export const deletejobapplication=async(req,res)=>{
       message: "Failed to fetch applied jobs",
     });
   }
+}
+
+export const getnonuserjobbyid=async(req,res)=>{
+    const jobid=req.params.id
+   
+    const result=await dbgetnonuserjobbyid(jobid)
+
+    
+    if(result.success){
+        res.status(200).json(result)
+    }
+    else{
+         res.status(200).json(result)
+    }
 }

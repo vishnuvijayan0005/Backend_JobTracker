@@ -91,6 +91,8 @@ export const dbcompany = async (companyData) => {
       approved: false,
       companyid: companyUser._id,
     });
+    companyUser.userId = user._id;
+    await companyUser.save();
     return (companyUser, user);
   } catch (error) {
     console.error("Register helper error:", error.message);

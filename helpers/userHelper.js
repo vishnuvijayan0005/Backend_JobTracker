@@ -6,7 +6,7 @@ import UserProfile from "../model/UserProfileSchema.js";
 
 export const dbgetuserjobs = async () => {
   try {
-    const companydet = await Job.find({ status: "Open" }).sort({
+    const companydet = await Job.find({ status: "Open" ,forcedclose:"false"}).sort({
       createdAt: -1,
     });
     // console.log(companydet);
@@ -149,7 +149,10 @@ export const dbgetjobbyid = async (jobid,userId) => {
 
 export const dbgetcompanylist = async () => {
   try {
-    const companies = await Company.find();
+    const companies = await Company.find({approved:true}).sort({createdAt:-1}).populate("userId", "isblocked");
+
+console.log(companies);
+
 
     if (!companies) {
       return {
@@ -273,3 +276,26 @@ export const dbdeletejobapplication = async (userId, jobId) => {
   }
 };
 
+export const dbgetnonuserjobbyid=async(jobId)=>{
+    try {
+    const jobData = await Job.findById(jobId);
+    // console.log(jobData, "-------");
+    
+    if (!jobData) {
+      return {
+        success: false,
+        message: "not found",
+      };
+
+    } 
+      return {
+        success: true,
+        message: "fetched",
+        data: jobData.toObject(),
+    
+      };
+    
+  } catch (error) {
+    console.log(error);
+  }
+}

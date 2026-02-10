@@ -43,7 +43,7 @@ export const companyreg = async (req, res) => {
 export const userlogin = async (req, res) => {
   const { email, password } = req.body;
 
-  const userInfo = await User.findOne({ email, approved: true });
+  const userInfo = await User.findOne({ email, approved: true,isblocked:false });
   if (!userInfo) {
     return res.status(401).json({ message: "User not registered" });
   }
