@@ -11,7 +11,8 @@ export const dbgetcompaniesbyid = async (companyID) => {
         message: "companyid not found or invalid",
       };
     }
-    const company = await Company.findById(companyID);
+    const company = await Company.findById(companyID).populate("userId","_id isblocked")
+  console.log(company);
   
     if (!company) {
       return {
@@ -31,6 +32,7 @@ export const dbgetcompaniesbyid = async (companyID) => {
 
 export const dbupdatecompanystatus = async (companyID, data) => {
   try {
+    console.log(data,userId);
     const { status } = data;
 
     if (typeof status !== "boolean") {
@@ -39,6 +41,7 @@ export const dbupdatecompanystatus = async (companyID, data) => {
         message: "Invalid status value",
       };
     }
+
 
     const company = await Company.findByIdAndUpdate(
       companyID,
@@ -71,7 +74,7 @@ export const dbupdatecompanystatus = async (companyID, data) => {
 };
 export const dbgetuser = async () => {
   try {
-    const users = await UserProfile.find().sort({createdAt:-1}).populate("userId", "email");
+    const users = await UserProfile.find().sort({createdAt:-1}).populate("userId", "email isblocked");
 
     if (!users) {
       return {
@@ -240,3 +243,70 @@ try {
       message: "Failed to update company status",
     };
   }}
+
+
+  export const dbupdateuserstatus=async(userID,data)=>{
+      try {
+       
+        
+    const { status } = data;
+
+    if (typeof status !== "boolean") {
+      return {
+        success: false,
+        message: "Invalid status value",
+      };
+    }
+const userData= await UserProfile.findById(userID).select("userId" )
+
+
+    if (!userData) {
+      return {
+        success: false,
+        message: "Company not found",
+      };
+    }
+const userInfo=await User.findByIdAndUpdate(userData.userId , { isblocked: status },{new:true});
+  
+
+
+    return {
+      success: true,
+      message: "user status updated successfully",
+      data:userInfo ,
+    };
+  } catch (error) {
+    console.error("user status update error:", error);
+
+    return {
+      success: false,
+      message: "Failed to update user status",
+    };
+  }
+  }
+
+
+  export const dbgetuserbyid=async(userID)=>{
+     try {
+ const UserData = await UserProfile.findById(userID).populate("userId", "email isblocked");
+
+    if (!UserData) {
+      return {
+        success: false,
+        message: "User Not Found",
+      };
+    } else {
+      return {
+        success: true,
+        message: "fetched User Data",
+        data: UserData,
+      };
+    }
+  } catch (error) {
+    return {
+      success: false,
+      message: "something went wrong",
+      error: error,
+    };
+  } 
+  }

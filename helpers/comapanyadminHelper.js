@@ -8,7 +8,7 @@ import Interview from "../model/InterviewSchema.js";
 
 export const dbpostnewjob = async (job) => {
   try {
-    console.log("JOB DATA:", job);
+    // console.log("JOB DATA:", job);
 
     const companyUserId = job.company;
 
@@ -87,7 +87,7 @@ export const dbgetmyobs = async (companyid) => {
       data: jobs,
     };
   } catch (error) {
-    console.log(error);
+    // console.log(error);
     return {
       success: false,
       message: "not fetched jobs",
@@ -339,7 +339,7 @@ export const dbgetinterviewapplicants = async (companyId) => {
 
 export const dbupdateinterview = async (data) => {
   const { applicationId, result, resultNote } = data;
-  console.log(data);
+  // console.log(data);
   
   try {
     const job = await Interview.findOneAndUpdate(
@@ -505,7 +505,7 @@ export const dbupdatejobdetails = async (jobid, userid, jobData) => {
   try {
     const job = await Job.findOne({
       _id: jobid,
-      company: userid,
+     
     });
 
     if (!job) {

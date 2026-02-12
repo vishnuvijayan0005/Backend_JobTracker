@@ -4,6 +4,7 @@ import {
   dbdeletejobapplication,
   dbgetappliedjobs,
   dbgetcompanylist,
+  dbgetinterviewData,
   dbgetjobbyid,
   dbgetnonuserjobbyid,
   dbgetuserjobs,
@@ -192,3 +193,56 @@ export const getnonuserjobbyid=async(req,res)=>{
          res.status(200).json(result)
     }
 }
+
+export const getInterviewData=async(req,res)=>{
+  const jobid=req.params.id
+   const userId=req.user.id
+    const result=await dbgetinterviewData(jobid,userId)
+
+    
+    if(result.success){
+        res.status(200).json(result)
+    }
+    else{
+         res.status(200).json(result)
+    }
+}
+
+
+
+// --------ats score------
+import { extractResumeText } from "../services/resumeParser.js";
+import { calculateATSScore } from "../services/atsEngine.js";
+
+export const analyzeResume = async (req, res) => {
+  try {
+    const file = req.file;
+    const { jobDescription } = req.body;
+
+    if (!file || !jobDescription) {
+      return res.status(400).json({
+        success: false,
+        message: "Resume file and job description required"
+      });
+    }
+
+    const resumeText = await extractResumeText(file);
+
+    const result = calculateATSScore(
+      resumeText,
+      jobDescription
+    );
+
+    return res.json({
+      success: true,
+      ...result
+    });
+
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      success: false,
+      message: "ATS analysis failed"
+    });
+  }
+};

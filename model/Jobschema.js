@@ -22,7 +22,7 @@ const JobSchema = new mongoose.Schema(
     },
 
     benefits: {
-      type: [String], // comma separated → array
+      type: [String],
       default: [],
     },
 

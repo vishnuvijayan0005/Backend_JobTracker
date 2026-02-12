@@ -1,5 +1,6 @@
 import Application from "../model/ApplicationSchema.js";
 import Company from "../model/CompanySchema.js";
+import Interview from "../model/InterviewSchema.js";
 import Job from "../model/Jobschema.js";
 import User from "../model/User.js";
 import UserProfile from "../model/UserProfileSchema.js";
@@ -151,7 +152,7 @@ export const dbgetcompanylist = async () => {
   try {
     const companies = await Company.find({approved:true}).sort({createdAt:-1}).populate("userId", "isblocked");
 
-console.log(companies);
+// console.log(companies);
 
 
     if (!companies) {
@@ -297,5 +298,55 @@ export const dbgetnonuserjobbyid=async(jobId)=>{
     
   } catch (error) {
     console.log(error);
+  }
+}
+
+export const dbgetinterviewData=async(jobId,userId)=>{
+  try{
+  const application = await Application.findOne({
+      jobId,
+      userId,
+    });
+
+
+    if (!application) {
+      return res.status(404).json({
+        success: false,
+        message: "Application not found",
+      });
+    }
+
+    // 2️⃣ Find interview using applicationId
+    const interview = await Interview.findOne({
+      applicationId: application._id,
+    });
+
+    if (!interview) {
+      return {
+        success: false,
+        message: "Interview not scheduled yet",
+      };
+    }
+        const filteredData = {
+      date: interview.date,
+      time: interview.time,
+      mode: interview.mode,
+      location:
+        interview.mode === "offline" ? interview.location : null,
+      meetingLink:
+        interview.mode === "online" ? interview.meetingLink : null,
+    };
+    
+
+    return{
+      success: true,
+      data: filteredData,
+    };
+  } catch (error) {
+    console.error(error);
+ return{
+      success: false,
+      message: "Server error",
+    };
   }
 }

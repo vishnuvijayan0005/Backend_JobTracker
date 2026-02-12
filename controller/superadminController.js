@@ -4,10 +4,13 @@ import {
   dbgetjobs,
   dbgetjobsbyid,
   dbgetuser,
+  dbgetuserbyid,
   dbupdatecompanypresence,
   dbupdatecompanystatus,
   dbupdateforced,
+  dbupdateuserstatus,
 } from "../helpers/superadminHelper.js";
+import { logout } from "./authcontroller.js";
 
 export const getcompaniesbyid = async (req, res) => {
   const result = await dbgetcompaniesbyid(req.params.id);
@@ -89,4 +92,25 @@ export const updatecompanypresence=async(req,res)=>{
   } else {
     return res.status(401).json(result);
   }  
+}
+
+export const updateuserstatus=async(req,res)=>{
+ 
+ 
+ const result = await dbupdateuserstatus(req.params.id, req.body);
+  if (result.success) {
+    return res.status(200).json(result);
+  } else {
+    return res.status(401).json(result);
+  }  
+}
+
+
+export const getuserbyid=async(req,res)=>{
+  const result = await dbgetuserbyid(req.params.id);
+  if (result.success) {
+    return res.status(200).json(result);
+  } else {
+    return res.status(401).json(result);
+  }     
 }

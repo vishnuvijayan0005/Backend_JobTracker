@@ -1,9 +1,10 @@
 import express from "express";
 
 import { protect } from "../middleware/protect.js";
-import { addapplication, addprofile, deletejobapplication, getappliedjobs, getcompanylist, getjobbyid, getjobs, getnonuserjobbyid, getuserprofile } from "../controller/userController.js";
+import { addapplication, addprofile, analyzeResume, deletejobapplication, getappliedjobs, getcompanylist, getInterviewData, getjobbyid, getjobs, getnonuserjobbyid, getuserprofile } from "../controller/userController.js";
 import upload from "../middleware/upload.js";
 import { fetchSearch, getCompanyDashboardsearch } from "../controller/campanyadminController.js";
+import atsUpload from "../middleware/atsUpload.js";
 
 const router = express.Router();
 
@@ -26,4 +27,10 @@ router.post("/addprofile",protect, upload.fields([
   router.get("/fetchsearch",fetchSearch)
   router.get("/getnonuserjobs",getjobs)
     router.get("/jobsdetails/:id/nonuser",getnonuserjobbyid)
+    router.get("/interviewData/:id",protect,getInterviewData)
+    router.post(
+  "/analyze",
+  atsUpload.single("resume"),
+  analyzeResume
+);
 export default router;
