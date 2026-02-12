@@ -5,6 +5,7 @@ import User from "../model/User.js";
 import Company from "../model/CompanySchema.js";
 import Application from "../model/ApplicationSchema.js";
 import Interview from "../model/InterviewSchema.js";
+import { notifyUsersAboutJob } from "../controller/userController.js";
 
 export const dbpostnewjob = async (job) => {
   try {
@@ -58,10 +59,10 @@ export const dbpostnewjob = async (job) => {
         ? job.benefits
         : job.benefits?.split(",").map(b => b.trim()),
 
-      company: companyUserId,
+      company: companyUser.companyid,
       companyName: companyUser.companyid.companyName,
     });
-
+ await notifyUsersAboutJob(createdJob)
     return {
       success: true,
       message: "Job added successfully",
