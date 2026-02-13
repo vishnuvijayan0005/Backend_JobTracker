@@ -70,13 +70,13 @@ export const userlogin = async (req, res) => {
   res.status(200).json({
     success: true,
 
-    // user: {
+    user: {
     //   email: userInfo.email,
-    //   role: userInfo.role,
+      role: userInfo.role,
     //   id: userInfo._id,
     //   name:userInfo.name,
     //   isprofilefinished:userInfo.isprofilefinished,
-    // },
+    },
   });
 };
 
