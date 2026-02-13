@@ -10,6 +10,10 @@ import {
   dbupdateforced,
   dbupdateuserstatus,
 } from "../helpers/superadminHelper.js";
+import Company from "../model/CompanySchema.js";
+import Job from "../model/Jobschema.js";
+import User from "../model/User.js";
+import UserProfile from "../model/UserProfileSchema.js";
 import { logout } from "./authcontroller.js";
 
 export const getcompaniesbyid = async (req, res) => {
@@ -114,3 +118,71 @@ export const getuserbyid=async(req,res)=>{
     return res.status(401).json(result);
   }     
 }
+
+
+
+export const getAdminDashboardInfo = async (req, res) => {
+  try {
+    // 1️⃣ Registered companies
+    const totalCompanies = await Company.countDocuments();
+
+    // 2️⃣ Active job posts
+    const activeJobs = await Job.countDocuments({ status: "Open" });
+
+    // 3️⃣ Total users
+    const totalUsers = await UserProfile.countDocuments();
+
+   
+    const pendingApprovals = await Company.countDocuments({ approved: false });
+
+    // 5️⃣ Recent Platform Activity (latest 5 activities)
+    const recentCompanies = await Company.find()
+      .sort({ createdAt: -1 })
+      .limit(2)
+      .select("companyName createdAt");
+console.log(recentCompanies);
+
+    const recentJobs = await Job.find()
+      .sort({ createdAt: -1 })
+      .limit(2)
+      .select("title createdAt");
+
+
+    const recentUsers = await UserProfile.find()
+      .sort({ createdAt: -1 })
+      .limit(1)
+      .select("firstName middleName lastName createdAt");
+console.log(recentUsers);
+
+    // Format activity messages
+    const activity = [
+      ...recentCompanies.map(
+        (c) =>
+          `${c.status === "pending" ? "⚠ Company pending approval" : "✔ New company registered"}: ${c.companyName}`
+      ),
+      ...recentJobs.map((j) => `📄 New job posted: ${j.title}`),
+...recentUsers.map(
+  (u) => `👤 New user joined: ${u.firstName} ${u.middleName || ""} ${u.lastName}`
+),
+    ];
+
+    res.status(200).json({
+      success: true,
+      data: {
+        stats: {
+          totalCompanies,
+          activeJobs,
+          totalUsers,
+          pendingApprovals,
+        },
+        activity,
+      },
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch dashboard info",
+    });
+  }
+};

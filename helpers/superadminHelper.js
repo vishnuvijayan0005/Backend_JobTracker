@@ -12,7 +12,7 @@ export const dbgetcompaniesbyid = async (companyID) => {
       };
     }
     const company = await Company.findById(companyID).populate("userId","_id isblocked")
-  console.log(company);
+
   
     if (!company) {
       return {
@@ -32,7 +32,7 @@ export const dbgetcompaniesbyid = async (companyID) => {
 
 export const dbupdatecompanystatus = async (companyID, data) => {
   try {
-    console.log(data,userId);
+  
     const { status } = data;
 
     if (typeof status !== "boolean") {

@@ -5,7 +5,6 @@ const JobSchema = new mongoose.Schema(
     title: {
       type: String,
       required: true,
-      
     },
 
     description: {
@@ -70,10 +69,10 @@ const JobSchema = new mongoose.Schema(
       ref: "Company",
       required: true,
     },
-jobMode:{
-type:String,
-enum: ["Remote", "Onsite", "Hybrid", "Field Based"],
-},
+    jobMode: {
+      type: String,
+      enum: ["Remote", "Onsite", "Hybrid", "Field Based"],
+    },
     companyName: {
       type: String,
     },
@@ -83,14 +82,14 @@ enum: ["Remote", "Onsite", "Hybrid", "Field Based"],
       enum: ["Open", "Closed"],
       default: "Open",
     },
-    forcedclose:{
-      type:Boolean,
-      default:false
-    }
+    forcedclose: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 const Job = mongoose.model("Job", JobSchema);

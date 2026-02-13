@@ -6,6 +6,7 @@ import Company from "../model/CompanySchema.js";
 import Application from "../model/ApplicationSchema.js";
 import Interview from "../model/InterviewSchema.js";
 import { notifyUsersAboutJob } from "../controller/userController.js";
+import { logAudit } from "../utils/auditLogger.js";
 
 export const dbpostnewjob = async (job) => {
   try {
@@ -62,6 +63,16 @@ export const dbpostnewjob = async (job) => {
       company: companyUser.companyid,
       companyName: companyUser.companyid.companyName,
     });
+
+    // await logAudit({
+    //   user: companyUserId, 
+    //   action: "CREATE_JOB",
+    //   targetType: "Job",
+    //   userName:createdJob.companyName,
+    //   targetId: createdJob._id,
+    //   details: `Job title: ${createdJob.title}`,
+     
+    // });
  await notifyUsersAboutJob(createdJob)
     return {
       success: true,

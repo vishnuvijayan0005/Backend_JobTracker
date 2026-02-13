@@ -5,6 +5,7 @@ import {
   addapplication,
   addprofile,
   analyzeResume,
+  createJobAlert,
   deletejobapplication,
   getappliedjobs,
   getcompanybyid,
@@ -13,6 +14,7 @@ import {
   getjobbyid,
   getjobs,
   getnonuserjobbyid,
+  getUserJobAlerts,
   getuserprofile,
   subscribeToCompany,
   unsubscribeFromCompany,
@@ -69,5 +71,9 @@ router.patch("/notifications/:id/read", async (req, res) => {
   await Notification.findByIdAndUpdate(id, { isRead: true });
   res.json({ message: "Notification marked as read" });
 });
+router.post("/jobalert", protect, createJobAlert);
+
+// Get user's alerts
+router.get("/jobalerget", protect, getUserJobAlerts);
 
 export default router;

@@ -10,6 +10,9 @@ import {
   dbgetuserjobs,
   dbgetuserprofile,
 } from "../helpers/userHelper.js";
+import JobAlert from "../model/JobalertSchema.js";
+import Notification from "../model/NotificationSchema.js";
+import Subscription from "../model/SubscriptionSchema.js";
 import UserProfile from "../model/UserProfileSchema.js";
 
 export const getjobs = async (req, res) => {
@@ -226,9 +229,8 @@ export const getcompanybyid=async(req,res)=>{
 
     }
 const isSubscribed = !!(await Subscription.exists({ userId, companyId }));
-    console.log(isSubscribed);
-    console.log(company);
-    
+  
+
     res.status(201).json({ success: true, data: {
         company,        
         isSubscribed,   
@@ -243,12 +245,7 @@ const isSubscribed = !!(await Subscription.exists({ userId, companyId }));
 }
 
 // --------ats score------
-import { extractResumeText } from "../services/resumeParser.js";
-import { calculateATSScore } from "../services/atsEngine.js";
-import Subscription from "../model/SubscriptionSchema.js";
-import Company from "../model/CompanySchema.js";
-import Notification from "../model/NotificationSchema.js";
-import JobAlert from "../model/JobalertSchema.js";
+
 
 export const analyzeResume = async (req, res) => {
   try {
@@ -295,7 +292,7 @@ export const subscribeToCompany = async (req, res) => {
   try {
     const userId = req.user.id; // assuming you have auth middleware
     const companyId  = req.params.id;
-    // console.log(userId,"=========",companyId);
+ 
     
 
 
@@ -308,7 +305,7 @@ export const subscribeToCompany = async (req, res) => {
     res.status(201).json({ success: true, data: subscription });
   } catch (err) {
     if (err.code === 11000) {
-      // Duplicate subscription
+      
       return res.status(400).json({ success: false, message: "Already subscribed" });
     }
     res.status(500).json({ success: false, message: "Server Error" });
@@ -372,7 +369,6 @@ export const notifyUsersAboutJob = async (job) => {
     });
   }
 
-  // 2️⃣ Job Alerts
   const alerts = await JobAlert.find({ isActive: true });
   for (let alert of alerts) {
     const matchesKeywords = alert.keywords.some(
@@ -390,5 +386,45 @@ export const notifyUsersAboutJob = async (job) => {
         link: `/user/jobsdetails/${job._id}`,
       });
     }
+  }
+};
+export const createJobAlert = async (req, res) => {
+  try {
+    const { keywords, location, jobType } = req.body;
+    const userId = req.user.id;
+
+    if (!keywords || !keywords.length) {
+      return res.status(400).json({ message: "Keywords are required" });
+    }
+
+    const newAlert = new JobAlert({
+      userId,
+      keywords,
+      location,
+      jobType,
+    });
+
+    await newAlert.save();
+
+    res.status(201).json({
+      success: true,
+      message: "Job alert created successfully",
+      alert: newAlert,
+    });
+  } catch (error) {
+    console.error("Error creating job alert:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+export const getUserJobAlerts = async (req, res) => {
+  try {
+    const userId = req.user._id;
+
+    const alerts = await JobAlert.find({ userId }).sort({ createdAt: -1 });
+
+    res.status(200).json({ success: true, alerts });
+  } catch (error) {
+    console.error("Error fetching job alerts:", error);
+    res.status(500).json({ success: false, message: "Server error" });
   }
 };

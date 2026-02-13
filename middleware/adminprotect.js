@@ -5,7 +5,7 @@ export const adminprotect = (req, res, next) => {
       .json({ success: false, message: "Not authenticated" });
   }
 
-  if (req.user.role !== "admin" && req.user.role !== "superadmin") {
+  if (req.user.role !== "admin" ) {
     return res
       .status(403)
       .json({ success: false, message: "Admin access only" });

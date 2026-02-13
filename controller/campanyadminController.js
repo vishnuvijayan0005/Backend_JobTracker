@@ -22,6 +22,7 @@ export const postnewjob = async (req, res) => {
   const company = req.user.id;
   const newjob = { ...req.body, company };
 
+
   const result = await dbpostnewjob(newjob);
   if (result.success) {
     res.status(200).json(result);
