@@ -34,17 +34,16 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 
-app.use(
-  cors({
-    origin: [
-      "http://localhost:3000",
-     "https://frontend-job-tracker.vercel.app"
-    ],
-    credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-  })
-);
+const allowedOrigins = [
+  "http://localhost:3000",
+  "https://frontend-job-tracker.vercel.app"
+];
+
+app.use(cors({
+  origin: allowedOrigins,
+  credentials: true
+}));
+
 app.use('/companyadmin', companyRouter);
 app.use('/user', usersRouter);
 app.use('/superadmin',superadminRouter)
