@@ -33,21 +33,20 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 const allowedOrigins = [
-  "http://localhost:3000",           // for local dev
-  "https://frontend-job-tracker.vercel.app/" // production frontend
+  "http://localhost:3000",
+  "https://frontend-job-tracker.vercel.app"
 ];
 
 app.use(cors({
-  origin: function(origin, callback) {
-    // allow requests with no origin (like Postman)
-    if (!origin) return callback(null, true);
-    if (allowedOrigins.indexOf(origin) === -1) {
-      const msg = `The CORS policy for this site does not allow access from the specified Origin.`;
-      return callback(new Error(msg), false);
+  origin: function (origin, callback) {
+    if (!origin) return callback(null, true); // allow Postman
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    } else {
+      return callback(new Error("Not allowed by CORS"));
     }
-    return callback(null, true);
   },
-  credentials: true, // allow cookies
+  credentials: true
 }));
 app.use('/companyadmin', companyRouter);
 app.use('/user', usersRouter);
