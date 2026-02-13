@@ -15,10 +15,7 @@ import cors from 'cors';
 
 
 const app = express();
-app.use(cors({
-  origin: 'http://localhost:3000', // Next.js frontend
-  credentials: true
-}));
+
 /* __dirname fix for ES modules */
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
