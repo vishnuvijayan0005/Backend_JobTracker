@@ -9,7 +9,7 @@ export const authRegistration = async (req, res) => {
     return res.status(201).json({
       success: true,
       message: "User registered successfully",
-      user,
+      
     });
   } catch (error) {
     console.error("Controller error:", error.message);
@@ -70,13 +70,13 @@ export const userlogin = async (req, res) => {
   res.status(200).json({
     success: true,
 
-    user: {
-      email: userInfo.email,
-      role: userInfo.role,
-      id: userInfo._id,
-      name:userInfo.name,
-      isprofilefinished:userInfo.isprofilefinished,
-    },
+    // user: {
+    //   email: userInfo.email,
+    //   role: userInfo.role,
+    //   id: userInfo._id,
+    //   name:userInfo.name,
+    //   isprofilefinished:userInfo.isprofilefinished,
+    // },
   });
 };
 
