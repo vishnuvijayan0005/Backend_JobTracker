@@ -97,8 +97,8 @@ export const checkcontroll = async(req, res) => {
   res.status(200).json({
     success: true,
     user: {
-      id:userdata._id,
-      name:userdata.name,
+    
+    
       role:userdata.role,
       email:userdata.email,
       isprofilefinished:userdata.isprofilefinished

@@ -140,7 +140,7 @@ export const getAdminDashboardInfo = async (req, res) => {
       .sort({ createdAt: -1 })
       .limit(2)
       .select("companyName createdAt");
-console.log(recentCompanies);
+// console.log(recentCompanies);
 
     const recentJobs = await Job.find()
       .sort({ createdAt: -1 })
@@ -152,7 +152,7 @@ console.log(recentCompanies);
       .sort({ createdAt: -1 })
       .limit(1)
       .select("firstName middleName lastName createdAt");
-console.log(recentUsers);
+// console.log(recentUsers);
 
     // Format activity messages
     const activity = [
