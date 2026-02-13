@@ -34,7 +34,7 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 const allowedOrigins = [
   "http://localhost:3000",           // for local dev
-  "https://frontend-job-tracker.vercel.app/" // production frontend
+  "https://frontend-job-tracker-ar8ytpjpq.vercel.app/" // production frontend
 ];
 
 app.use(cors({
