@@ -32,22 +32,19 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
-const allowedOrigins = [
-  "http://localhost:3000",
-  "https://frontend-job-tracker.vercel.app"
-];
 
-app.use(cors({
-  origin: function (origin, callback) {
-    if (!origin) return callback(null, true); // allow Postman
-    if (allowedOrigins.includes(origin)) {
-      return callback(null, true);
-    } else {
-      return callback(new Error("Not allowed by CORS"));
-    }
-  },
-  credentials: true
-}));
+
+app.use(
+  cors({
+    origin: [
+      "http://localhost:3000",
+     "https://frontend-job-tracker.vercel.app"
+    ],
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
 app.use('/companyadmin', companyRouter);
 app.use('/user', usersRouter);
 app.use('/superadmin',superadminRouter)
