@@ -59,13 +59,12 @@ export const userlogin = async (req, res) => {
     { expiresIn: "1d" },
   );
 
-  res.cookie("token", token, {
-    httpOnly: true,
-    sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
-    maxAge: 24 * 60 * 60 * 1000,
-  });
-
+ res.cookie("token", token, {
+  httpOnly: true,
+  secure: true,      
+  sameSite: "None",      
+  maxAge: 24 * 60 * 60 * 1000,
+});
 
   res.status(200).json({
     success: true,
