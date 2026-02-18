@@ -26,9 +26,9 @@ const CompanySchema = new mongoose.Schema({
   companyfield:{
     type:String
   },
-  companylogo:{
-    type:String
-  },
+  // companylogo:{
+  //   type:String
+  // },
   approved:{
     type:Boolean
   },

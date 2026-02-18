@@ -10,6 +10,7 @@ import {
   dbgetuserjobs,
   dbgetuserprofile,
 } from "../helpers/userHelper.js";
+import Company from "../model/CompanySchema.js";
 import JobAlert from "../model/JobalertSchema.js";
 import Notification from "../model/NotificationSchema.js";
 import Subscription from "../model/SubscriptionSchema.js";
@@ -26,9 +27,8 @@ export const getjobs = async (req, res) => {
 export const addprofile = async (req, res) => {
   try {
     const userId = req.user.id;
-    // console.log(req.body);
 
-   
+
     const location =
       typeof req.body.location === "string"
         ? JSON.parse(req.body.location)
@@ -38,6 +38,12 @@ export const addprofile = async (req, res) => {
       typeof req.body.socials === "string"
         ? JSON.parse(req.body.socials)
         : req.body.socials;
+
+    const skills =
+      typeof req.body.skills === "string"
+        ? JSON.parse(req.body.skills)
+        : req.body.skills;
+
     const photo = req.files?.photo?.[0];
     const resume = req.files?.resume?.[0];
 
@@ -46,22 +52,20 @@ export const addprofile = async (req, res) => {
         ...req.body,
         location,
         socials,
+        skills,
         photoUrl: photo?.path || "",
         resumeUrl: resume?.path || "",
       },
-      userId,
+      userId
     );
 
-    if (result.success) {
-      return res.status(200).json(result);
-    } else {
-      return res.status(400).json(result);
-    }
+    return res.status(result.success ? 200 : 400).json(result);
   } catch (error) {
     console.error("Add profile controller error:", error.message);
     return res.status(500).json({ success: false, message: "Server error" });
   }
 };
+
 
 export const getuserprofile = async (req, res) => {
   const userID = req.user.id;
@@ -90,22 +94,28 @@ export const getjobbyid=async(req,res)=>{
 
 
 
-export const getcompanylist=async(req,res)=>{
-try {
-    const result=await dbgetcompanylist()
+export const getCompanyList = async (req, res) => {
+  try {
+    const { search, field } = req.query;
 
-    
-    if(!result.success){
-        return res.status(404).json(result)
+    const result = await dbgetcompanylist({
+      search,
+      field,
+    });
+
+    if (!result.success) {
+      return res.status(400).json(result);
     }
-    else{
-        return res.status(200).json(result)
-    }
-} catch (error) {
-    console.log(error);
-    return res.status(500).json({error:error})
-}
-}
+
+    res.status(200).json(result);
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
+  }
+};
+
 
 export const addapplication = async (req, res) => {
   try {
@@ -284,10 +294,8 @@ export const analyzeResume = async (req, res) => {
 
 
 
-// -------subscription
 
 
-// Subscribe to a company
 export const subscribeToCompany = async (req, res) => {
   try {
     const userId = req.user.id; // assuming you have auth middleware
@@ -426,5 +434,24 @@ export const getUserJobAlerts = async (req, res) => {
   } catch (error) {
     console.error("Error fetching job alerts:", error);
     res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
+
+export const getCompanyFields = async (req, res) => {
+  try {
+    const fields = await Company.distinct("companyfield", {
+      approved: true,
+    });
+
+    res.status(200).json({
+      success: true,
+      data: fields,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch fields",
+    });
   }
 };

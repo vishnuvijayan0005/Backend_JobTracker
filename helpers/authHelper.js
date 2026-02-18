@@ -1,16 +1,17 @@
 import bcrypt from "bcrypt";
 import User from "../model/User.js";
 import Company from "../model/CompanySchema.js";
+import UserProfile from "../model/UserProfileSchema.js";
 
 
 
 
 export const register = async (userData) => {
-  const { name, email, password } = userData;
+  const { firstName,middleName,lastName, email,phone ,password } = userData;
   // console.log(userData);
 
   try {
-    if (!name || !email || !password) {
+    if (!firstName ||!lastName|| !email || !password) {
       throw new Error("All fields are required");
     }
 
@@ -21,13 +22,21 @@ export const register = async (userData) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const user = await User.create({
-      name,
-      email,
-      password: hashedPassword,
-      isprofilefinished:false
+   const user = await User.create({
+  name: `${firstName} ${lastName}`.trim(),
+  email,
+  password: hashedPassword,
+  isProfileFinished: false,
+});
+await UserProfile.create({
+      
+userId:user._id,
+      firstName,
+      middleName,
+      lastName,
+      phone,
+     
     });
-
     return user;
   } catch (error) {
     console.error("Register helper error:", error.message);

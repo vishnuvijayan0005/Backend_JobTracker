@@ -1,6 +1,6 @@
 import express from 'express';
 import {  getAdminDashboardInfo, getcompaniesbyid, getcompanyadminlist, getjobs, getjobsbyid, getuserbyid, getusers, updatecompanypresence, updatecompanystatus, updateforced, updateuserstatus } from '../controller/superadminController.js';
-import { getcompanylist } from '../controller/userController.js';
+
 import { protect } from '../middleware/protect.js';
 import { adminprotect } from '../middleware/adminprotect.js';
 const router = express.Router();

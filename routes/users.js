@@ -9,7 +9,8 @@ import {
   deletejobapplication,
   getappliedjobs,
   getcompanybyid,
-  getcompanylist,
+  getCompanyFields,
+  getCompanyList,
   getInterviewData,
   getjobbyid,
   getjobs,
@@ -47,7 +48,7 @@ router.post(
 
 router.get("/getuserprofile", protect, getuserprofile);
 router.get("/jobsdetails/:id", protect, getjobbyid);
-router.get("/companieslist", getcompanylist);
+router.get("/companieslist", getCompanyList);
 router.get("/company/:id",protect,getcompanybyid)
 router.post("/addapplication/:id", protect, addapplication);
 router.get("/appliedjobs", protect, getappliedjobs);
@@ -62,7 +63,7 @@ router.post("/unsubscribe/:id",protect,unsubscribeFromCompany)
 router.get("/notifications", protect,async (req, res) => {
   const userId = req.user.id;
   const notifications = await Notification.find({ userId }).sort({ createdAt: -1 });
-  console.log(notifications);
+  // console.log(notifications);
   
   res.json({ data: notifications });
 });
@@ -75,5 +76,6 @@ router.post("/jobalert", protect, createJobAlert);
 
 // Get user's alerts
 router.get("/jobalerget", protect, getUserJobAlerts);
+router.get("/company-fields",getCompanyFields)
 
 export default router;

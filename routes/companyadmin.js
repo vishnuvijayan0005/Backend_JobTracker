@@ -9,7 +9,7 @@ router.get('/', (req, res) => {
 
 router.post('/postnewjob',protect,postnewjob)
 router.get("/myjobs",protect,myjobs)
-router.get("/profile/:id",protect,getcompanyprofile)
+router.get("/profile",protect,getcompanyprofile)
 router.patch("/job/:id/status",protect,updatestatus)
 router.get("/getapplicants",protect,getapplicants)
 router.patch("/updateApplicationStatus",protect,updateApplicationStatus)

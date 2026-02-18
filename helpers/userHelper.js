@@ -37,7 +37,7 @@ export const dbaddprofile = async (profileData, userId) => {
     location,
     headline,
     bio,
-    skills,
+    skills,   
     experience,
     resumeUrl,
     gender,
@@ -47,42 +47,36 @@ export const dbaddprofile = async (profileData, userId) => {
   } = profileData;
 
   try {
-    const exist = await UserProfile.findOne({ userId });
-    // console.log(exist);
-
-    if (exist) {
-      return { success: false, message: "already in db" };
-    }
-    await UserProfile.create({
-      userId,
-
+   
+    const updateData = {
       firstName,
-      middleName,
+      middleName: middleName || null,
       lastName,
       phone,
       location,
       headline,
       bio,
-
-      skills: skills ? skills.split(",").map((s) => s.trim()) : [],
-
+      skills: Array.isArray(skills) ? skills : [],
       experience: Number(experience),
-
-      resumeUrl,
       gender,
       education,
       socials,
-
-      photoUrl,
-
       isProfileComplete: true,
-    });
+    };
 
-    await User.findByIdAndUpdate(
-      userId,
-      { isprofilefinished: true },
-      { new: true },
+    
+    if (photoUrl) updateData.photoUrl = photoUrl;
+    if (resumeUrl) updateData.resumeUrl = resumeUrl;
+
+    await UserProfile.findOneAndUpdate(
+      { userId },
+      { $set: updateData },
+      { new: true, upsert: true }
     );
+
+    await User.findByIdAndUpdate(userId, {
+      isprofilefinished: true,
+    });
 
     return { success: true, message: "Profile completed" };
   } catch (error) {
@@ -90,6 +84,8 @@ export const dbaddprofile = async (profileData, userId) => {
     return { success: false, message: "Some issues are there" };
   }
 };
+
+
 
 export const dbgetuserprofile = async (id) => {
   const userprofile = await UserProfile.find({ userId: id });
@@ -148,33 +144,46 @@ export const dbgetjobbyid = async (jobid,userId) => {
   }
 };
 
-export const dbgetcompanylist = async () => {
+export const dbgetcompanylist = async ({
+  search = "",
+  field = "",
+}) => {
   try {
-    const companies = await Company.find({approved:true}).sort({createdAt:-1}).populate("userId", "isblocked");
+    const query = {
+      approved: true,
+    };
 
-// console.log(companies);
-
-
-    if (!companies) {
-      return {
-        success: false,
-        message: "companies are empty",
-      };
-    } else {
-      return {
-        success: true,
-        message: "fetched companies",
-        data: companies,
-      };
+ 
+    if (search) {
+      query.$or = [
+        { companyName: { $regex: search, $options: "i" } },
+        { companyfield: { $regex: search, $options: "i" } },
+        { Companylocation: { $regex: search, $options: "i" } },
+      ];
     }
+
+    if (field) {
+      query.companyfield = field;
+    }
+
+    const companies = await Company.find(query)
+      .sort({ createdAt: -1 })
+      .populate("userId", "isblocked");
+
+    return {
+      success: true,
+      message: "Fetched companies",
+      data: companies,
+    };
   } catch (error) {
     return {
       success: false,
-      message: "something went wrong",
-      error: error,
+      message: "Something went wrong",
+      error,
     };
   }
 };
+
 
 export const dbaddapplication = async (userId, jobId) => {
   try {
@@ -316,7 +325,7 @@ export const dbgetinterviewData=async(jobId,userId)=>{
       });
     }
 
-    // 2️⃣ Find interview using applicationId
+    
     const interview = await Interview.findOne({
       applicationId: application._id,
     });

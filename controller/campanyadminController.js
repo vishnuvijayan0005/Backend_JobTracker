@@ -43,7 +43,7 @@ export const myjobs = async (req, res) => {
   }
 };
 export const getcompanyprofile = async (req, res) => {
-  const id = req.params.id;
+  const id = req.user.id;
 
   const result = await dbgetcompanyprofile(id);
   if (result.success) {
@@ -270,14 +270,17 @@ export const updatecompanyprofile=async(req,res)=>{
 export const fetchSearch = async (req, res) => {
   try {
     const search = (req.query.search || "").trim();
-    const type = req.query.type;
-    const jobMode = req.query.jobMode; 
+    const type = req.query.type || "";
+    const jobMode = req.query.jobMode || "";
 
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 5;
+    const skip = (page - 1) * limit;
+  
     const query = {
       status: "Open",
     };
 
-    // 🔍 Search filter
     if (search) {
       query.$or = [
         { title: { $regex: search, $options: "i" } },
@@ -286,24 +289,33 @@ export const fetchSearch = async (req, res) => {
       ];
     }
 
-    // 🧑‍💼 Job type filter
     if (type) {
       query.jobType = type;
     }
 
-    // 🏠 Job mode filter (Remote / Hybrid / Onsite)
     if (jobMode) {
       query.jobMode = jobMode;
     }
 
-    const jobs = await Job.find(query)
-      .select("title companyName location jobType jobMode salary") // 🔹 INCLUDED
-      .sort({ createdAt: -1 })
-      .limit(20);
+    const totalJobs = await Job.countDocuments(query);
 
-    return res.json({
+
+    const jobs = await Job.find(query)
+      .select("title companyName location jobType jobMode salary createdAt")
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
+
+ 
+    return res.status(200).json({
       success: true,
       data: jobs,
+      pagination: {
+        totalItems: totalJobs,
+        totalPages: Math.ceil(totalJobs / limit),
+        currentPage: page,
+        limit,
+      },
     });
   } catch (error) {
     console.error("User job search error:", error);
@@ -313,4 +325,5 @@ export const fetchSearch = async (req, res) => {
     });
   }
 };
+
 
