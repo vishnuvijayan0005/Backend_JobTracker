@@ -2,6 +2,7 @@ import { dbcompany, register } from "../helpers/authHelper.js";
 import User from "../model/User.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import crypto from "crypto";
 export const authRegistration = async (req, res) => {
   try {
     const user = await register(req.body);
@@ -107,4 +108,85 @@ export const checkcontroll = async(req, res) => {
       isprofilefinished:userdata.isprofilefinished
     },
   });
+};
+
+
+
+
+
+
+export const forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) return res.status(400).json({ message: "Email is required" });
+
+    const user = await User.findOne({ email });
+    // console.log("User found:", user);
+
+    if (!user) {
+      return res.json({
+        success: true,
+        message: "If an account exists, a reset link has been sent.",
+      });
+    }
+
+    // Generate token
+    const resetToken = crypto.randomBytes(32).toString("hex");
+    // console.log("Reset token:", resetToken);
+
+    // Hash token before saving
+    user.resetPasswordToken = crypto
+      .createHash("sha256")
+      .update(resetToken)
+      .digest("hex");
+    user.resetPasswordExpire = Date.now() + 5 * 60 * 1000; // 15 min
+
+    try {
+      await user.save({ validateBeforeSave: false });
+      // console.log("User saved with reset token");
+    } catch (err) {
+      console.error("Error saving user:", err);
+      return res.status(500).json({ message: "Failed to save reset token" });
+    }
+
+    const clientUrl = process.env.CLIENT_URL || "http://localhost:3000";
+    const resetUrl = `${clientUrl}/auth/reset-password/${resetToken}`;
+    // console.log("Reset URL:", resetUrl);
+
+    res.json({
+      success: true,
+      message: "Reset link generated",
+      resetUrl,
+      name: user.name,
+      email: user.email,
+    });
+  } catch (err) {
+    console.error("Forgot password error:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+
+
+export const resetPassword = async (req, res) => {
+  const { password } = req.body;
+  const { token } = req.params;
+
+  const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
+
+  const user = await User.findOne({
+    resetPasswordToken: hashedToken,
+    resetPasswordExpire: { $gt: Date.now() },
+  });
+
+  if (!user)
+    return res.status(400).json({ message: "Invalid or expired token" });
+// console.log(user);
+const hashedPassword=await bcrypt.hash(password, 10)
+  user.password = hashedPassword; 
+  user.resetPasswordToken = undefined;
+  user.resetPasswordExpire = undefined;
+  await user.save();
+
+  res.json({ success: true, message: "Password reset successful" });
 };

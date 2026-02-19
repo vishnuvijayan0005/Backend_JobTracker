@@ -36,7 +36,14 @@ const UserSchema = new mongoose.Schema({
   isblocked:{
     type:Boolean,
     default:false
-  }
+  },
+   resetPasswordToken: {
+    type: String,
+  },
+
+  resetPasswordExpire: {
+    type: Date,
+  },
 });
 const User = mongoose.model("User", UserSchema);
 export default User;
