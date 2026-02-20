@@ -77,5 +77,12 @@ router.post("/jobalert", protect, createJobAlert);
 // Get user's alerts
 router.get("/jobalerget", protect, getUserJobAlerts);
 router.get("/company-fields",getCompanyFields)
-
+router.patch("/notifications/read-all", protect,async (req, res) => {
+  const userId = req.user.id;
+  await Notification.updateMany(
+      { userId, isRead: false },
+      { $set: { isRead: true } }
+    );
+  res.json({ message: "All Notification marked as read" });
+});
 export default router;
