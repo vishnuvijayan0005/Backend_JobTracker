@@ -63,11 +63,11 @@ router.post("/unsubscribe/:id",protect,unsubscribeFromCompany)
 router.get("/notifications", protect,async (req, res) => {
   const userId = req.user.id;
   const notifications = await Notification.find({ userId }).sort({ createdAt: -1 });
-  // console.log(notifications);
+
   
   res.json({ data: notifications });
 });
-router.patch("/notifications/:id/read", async (req, res) => {
+router.patch("/notifications/:id/read",protect, async (req, res) => {
   const { id } = req.params;
   await Notification.findByIdAndUpdate(id, { isRead: true });
   res.json({ message: "Notification marked as read" });
