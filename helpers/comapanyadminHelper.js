@@ -89,9 +89,14 @@ export const dbpostnewjob = async (job) => {
 };
 export const dbgetmyobs = async (companyid) => {
   try {
-    const jobs = await Job.find({ company: companyid })
+    // console.log(companyid);
+    const companyData= await Company.findOne({userId:companyid})
+    // console.log(companyData._id);
+    
+    const jobs = await Job.find({ company: companyData._id })
       .lean()
       .sort({ createdAt: -1 });
+
 
     return {
       success: true,
