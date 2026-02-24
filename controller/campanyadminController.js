@@ -192,11 +192,13 @@ export const getCompanyDashboardsearch = async (req, res) => {
   try {
     const userId = req.user.id;
     const search = (req.query.search || "").trim();
-
+ const companyData= await Company.findOne({userId:userId})
+// console.log(userId);
 
     const query = {
-      company: userId,
+      company: companyData._id,
     };
+// console.log(query);
 
     if (search) {
       query.$or = [
@@ -208,6 +210,7 @@ export const getCompanyDashboardsearch = async (req, res) => {
     const jobsdata = await Job.find(query)
       .select("title jobType status createdAt")
       .sort({ createdAt: -1 });
+// console.log(jobsdata);
 
     return res.json({
       success: true,
