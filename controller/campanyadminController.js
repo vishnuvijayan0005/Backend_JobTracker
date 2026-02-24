@@ -78,8 +78,12 @@ const {status}=req.body
 
 export const getapplicants=async(req,res)=>{
   const userID=req.user.id
+  const companydata=await Company.findOne({userId:userID})
+// console.log(companydata);
+
+  
   try {
-    const result = await dbgetapplicants(userID);
+    const result = await dbgetapplicants(companydata._id);
 
     if (result.success) {
       return res.status(200).json(result);
@@ -111,8 +115,9 @@ const {applicationId,status}=req.body
 
 export const getshortlisted=async(req,res)=>{
   const userID=req.user.id
+   const companydata=await Company.findOne({userId:userID})
   try {
-    const result = await dbgetshortlisted(userID);
+    const result = await dbgetshortlisted(companydata._id);
 
     if (result.success) {
       return res.status(200).json(result);
@@ -126,9 +131,9 @@ export const getshortlisted=async(req,res)=>{
 }
 export const addinterviewschedule=async(req,res)=>{
   const userID=req.user.id
-
+ const companydata=await Company.findOne({userId:userID})
   try {
-    const result = await dbaddinterview(userID,req.body);
+    const result = await dbaddinterview(companydata._id,req.body);
 
     if (result.success) {
       return res.status(200).json(result);

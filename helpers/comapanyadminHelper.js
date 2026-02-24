@@ -174,10 +174,11 @@ export const dbupdatestatus = async (id, status) => {
 export const dbgetapplicants = async (companyId) => {
   try {
     // console.log(companyId, "------");
+// console.log(companyId);
 
-    const applications = await Application.find({ companyId })
+    const applications = await Application.find({ companyId:companyId })
       .populate("jobId", "_id title")
-      .populate("userId", "_id name email phone")
+      .populate("userId", "_id name email phone") 
       .sort({ createdAt: -1 });
 
     const formattedJobs = applications.map((app) => ({
@@ -194,6 +195,7 @@ export const dbgetapplicants = async (companyId) => {
       status: app.Applicationstatus,
       resumeUrl: app.resumeUrl,
     }));
+// console.log(formattedJobs);
 
     return {
       success: true,
