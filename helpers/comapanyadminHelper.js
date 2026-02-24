@@ -389,8 +389,10 @@ export const dbupdateinterview = async (data) => {
 export const dbgetcompanydashboard = async (userID) => {
   try {
     /* ================= JOBS ================= */
+    // console.log(userID);
+    const companyData= await Company.findOne({userId:userID})
     const jobs = await Job.find(
-      { company: userID },
+      { company: companyData._id },
       {
         _id: 1,
         title: 1,
@@ -399,6 +401,7 @@ export const dbgetcompanydashboard = async (userID) => {
         createdAt: 1,
       }
     ).sort({ createdAt: -1 });
+// console.log(jobs);
 
     const jobIds = jobs.map(job => job._id);
 
