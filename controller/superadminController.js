@@ -91,6 +91,7 @@ try {
 export const updatecompanypresence=async(req,res)=>{
    const result = await dbupdatecompanypresence(req.params.id, req.body);
 
+
   if (result.success) {
     return res.status(200).json(result);
   } else {

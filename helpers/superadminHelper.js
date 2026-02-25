@@ -32,6 +32,7 @@ export const dbgetcompaniesbyid = async (companyID) => {
 
 export const dbupdatecompanystatus = async (companyID, data) => {
   try {
+  // console.log(companyID);
   
     const { status } = data;
 
@@ -206,7 +207,11 @@ export const dbgetcompanyadminlist = async () => {
 
 export const dbupdatecompanypresence=async(companyID,data)=>{
 try {
+
+
+  
     const { status } = data;
+// console.log(status);
 
     if (typeof status !== "boolean") {
       return {

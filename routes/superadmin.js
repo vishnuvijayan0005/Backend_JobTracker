@@ -9,8 +9,8 @@ const router = express.Router();
 
 router.get("/companies", protect,adminprotect,getcompanyadminlist) //companies
 router.get("/companies/:id", protect,adminprotect,getcompaniesbyid) //company by id
-router.patch("/companyupdate/:id/status", protect,adminprotect,updatecompanystatus) //approve or disable
-router.patch("/company/:id/status", protect,adminprotect,updatecompanypresence) 
+router.patch("/companyupdate/:id/status", protect,updatecompanystatus) //approve or disable
+router.patch("/company/:id/status", protect,updatecompanypresence) 
 router.patch("/user/:id/status", protect,adminprotect,updateuserstatus) 
 router.get("/users", protect,adminprotect,getusers) //get users
 router.get("/user/:id/view", protect,adminprotect,getuserbyid)
