@@ -1,5 +1,5 @@
 import express from "express";
-import { authRegistration, checkcontroll, companyreg, forgotPassword, logout, resetPassword, userlogin } from "../controller/authcontroller.js";
+import { authRegistration, checkcontroll, companyreg, forgotPassword, logout, resetPassword, userlogin, verifyEmail } from "../controller/authcontroller.js";
 import { protect } from "../middleware/protect.js";
 const router = express.Router();
 
@@ -14,6 +14,7 @@ router.post("/logout",logout)
 router.get("/checkme",protect,checkcontroll)
 router.post("/forgot-password", forgotPassword);
 router.post("/reset-password/:token", resetPassword);
+router.get("/verify-email/:token", verifyEmail);
 // router.get("/user",protect,checkcontrolluser)
 // router.get("/admin",protect,checkcontrolladmin)
 // router.get("/companyadmin",protect,checkcontrollcompanyadmin)

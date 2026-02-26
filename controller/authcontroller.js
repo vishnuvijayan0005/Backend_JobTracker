@@ -7,10 +7,12 @@ export const authRegistration = async (req, res) => {
   try {
     const user = await register(req.body);
 
+
+
     return res.status(201).json({
       success: true,
       message: "User registered successfully",
-      
+      data:user
     });
   } catch (error) {
     console.error("Controller error:", error.message);
@@ -189,4 +191,53 @@ const hashedPassword=await bcrypt.hash(password, 10)
   await user.save();
 
   res.json({ success: true, message: "Password reset successful" });
+};
+export const verifyEmail = async (req, res) => {
+  try {
+    const { token } = req.params;
+
+    if (!token) {
+      return res.status(400).json({
+        success: false,
+        message: "Verification token missing",
+      });
+    }
+
+    const hashedToken = crypto
+      .createHash("sha256")
+      .update(token)
+      .digest("hex");
+
+   
+    const user = await User.findOne({
+      emailVerifyToken: hashedToken,
+      emailVerifyExpires: { $gt: Date.now() },
+    });
+
+    if (!user) {
+      return res.status(400).json({
+        success: false,
+        message: "Verification link is invalid or expired",
+      });
+    }
+
+    user.isEmailVerified = true;
+    user.approved = true;
+
+    user.emailVerifyToken = undefined;
+    user.emailVerifyExpires = undefined;
+
+    await user.save();
+
+    return res.redirect(
+      `${process.env.CLIENT_URL}/auth/verify-success`
+    );
+  } catch (error) {
+    console.error("Email verification error:", error.message);
+
+    return res.status(500).json({
+      success: false,
+      message: "Server error during verification",
+    });
+  }
 };

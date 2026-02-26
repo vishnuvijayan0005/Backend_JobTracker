@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 
+
 const UserSchema = new mongoose.Schema({
   name: {
     type: String,
@@ -19,7 +20,7 @@ const UserSchema = new mongoose.Schema({
   },
   approved: {
     type: Boolean,
-    default: true,
+    default: false,
   },
   companyid: {
     type: mongoose.Schema.Types.ObjectId,
@@ -29,20 +30,30 @@ const UserSchema = new mongoose.Schema({
     type: Boolean,
     default: true,
   },
-  isdeleted:{
-    type:Boolean,
-    default:false
+  isdeleted: {
+    type: Boolean,
+    default: false,
   },
-  isblocked:{
-    type:Boolean,
-    default:false
+  isblocked: {
+    type: Boolean,
+    default: false,
   },
-   resetPasswordToken: {
+  resetPasswordToken: {
     type: String,
   },
 
   resetPasswordExpire: {
     type: Date,
+  },
+  emailVerifyToken: { 
+    type: String
+   },
+  emailVerifyExpires: { 
+    type: Date 
+  },
+  isEmailVerified:{
+    type:String,
+    default:false
   },
 });
 const User = mongoose.model("User", UserSchema);

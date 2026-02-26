@@ -2,19 +2,27 @@ import bcrypt from "bcrypt";
 import User from "../model/User.js";
 import Company from "../model/CompanySchema.js";
 import UserProfile from "../model/UserProfileSchema.js";
-
+import crypto from "crypto";
 
 
 
 export const register = async (userData) => {
-  const { firstName,middleName,lastName, email,phone ,password } = userData;
-  // console.log(userData);
+  const {
+    firstName,
+    middleName,
+    lastName,
+    email,
+    phone,
+    password,
+  } = userData;
 
   try {
-    if (!firstName ||!lastName|| !email || !password) {
-      throw new Error("All fields are required");
+    // 1️⃣ Validate required fields
+    if (!firstName || !lastName || !email || !password) {
+      throw new Error("All required fields must be provided");
     }
 
+    // 2️⃣ Check if email already exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       throw new Error("Email already registered");
@@ -22,27 +30,43 @@ export const register = async (userData) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-   const user = await User.create({
-  name: `${firstName} ${lastName}`.trim(),
-  email,
-  password: hashedPassword,
-  isProfileFinished: false,
-});
-await UserProfile.create({
-      
-userId:user._id,
+
+    const verifyToken = crypto.randomBytes(32).toString("hex");
+    const hashedVerifyToken = crypto
+      .createHash("sha256")
+      .update(verifyToken)
+      .digest("hex");
+
+
+    // 5️⃣ Create user
+    const user = await User.create({
+      name: `${firstName} ${lastName}`.trim(),
+      email,
+      password: hashedPassword,
+      isProfileFinished: false,
+      emailVerifyToken: hashedVerifyToken,
+      emailVerifyExpires: Date.now() + 24 * 60 * 60 * 1000, 
+    });
+
+   
+    await UserProfile.create({
+      userId: user._id,
       firstName,
       middleName,
       lastName,
       phone,
-     
     });
-    return user;
+
+  
+    return {
+      email,
+      verifyToken, 
+    };
+
   } catch (error) {
     console.error("Register helper error:", error.message);
     throw error;
-  }
-};
+  }}
 
 export const dbcompany = async (companyData) => {
   // console.log(companyData);
