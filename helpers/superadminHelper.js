@@ -32,7 +32,7 @@ export const dbgetcompaniesbyid = async (companyID) => {
 
 export const dbupdatecompanystatus = async (companyID, data) => {
   try {
-  // console.log(companyID);
+
   
     const { status } = data;
 
@@ -57,7 +57,9 @@ export const dbupdatecompanystatus = async (companyID, data) => {
       };
     }
 
-    await User.findOneAndUpdate({ companyId: companyID }, { approved: status ,isEmailVerified:true});
+
+   const user= await User.findOneAndUpdate({ companyid: companyID }, { approved: status ,isEmailVerified:true},{new:true});
+
 
     return {
       success: true,
@@ -183,6 +185,7 @@ export const dbupdateforced = async (jobID, Data) => {
 export const dbgetcompanyadminlist = async () => {
   try {
  const companies = await Company.find({approved:false}).sort({ createdAt: -1 });
+
 
     if (!companies) {
       return {
