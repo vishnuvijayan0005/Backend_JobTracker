@@ -46,11 +46,16 @@ export const companyreg = async (req, res) => {
 export const userlogin = async (req, res) => {
   const { email, password } = req.body;
 
-  const userInfo = await User.findOne({ email, approved: true,isblocked:false });
+  const userInfo = await User.findOne({ email });
   if (!userInfo) {
     return res.status(401).json({ message: "User not registered" });
   }
-
+if(!userInfo.approved){
+ return res.status(401).json({ message: "verification under process!Please check you email or contact admin " });
+}
+if(!userInfo.isblocked){
+ return res.status(401).json({ message: "You are temporarily blocked by admin.. " });
+}
   const isMatch = await bcrypt.compare(password, userInfo.password);
   if (!isMatch) {
     return res.status(400).json({ message: "Invalid credentials" });
