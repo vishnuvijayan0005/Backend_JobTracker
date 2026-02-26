@@ -53,7 +53,7 @@ export const userlogin = async (req, res) => {
 if(!userInfo.approved){
  return res.status(401).json({ message: "verification under process!Please check you email or contact admin " });
 }
-if(!userInfo.isblocked){
+if(userInfo.isblocked){
  return res.status(401).json({ message: "You are temporarily blocked by admin.. " });
 }
   const isMatch = await bcrypt.compare(password, userInfo.password);
