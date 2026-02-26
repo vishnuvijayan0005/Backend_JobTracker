@@ -215,10 +215,9 @@ export const verifyEmail = async (req, res) => {
     });
 
     if (!user) {
-      return res.status(400).json({
-        success: false,
-        message: "Verification link is invalid or expired",
-      });
+      return res.redirect(
+      `${process.env.CLIENT_URL}/auth/verify-failed`
+    );
     }
 
     user.isEmailVerified = true;

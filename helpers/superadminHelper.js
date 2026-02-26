@@ -57,7 +57,7 @@ export const dbupdatecompanystatus = async (companyID, data) => {
       };
     }
 
-    await User.findOneAndUpdate({ companyId: companyID }, { approved: status });
+    await User.findOneAndUpdate({ companyId: companyID }, { approved: status ,isEmailVerified:true});
 
     return {
       success: true,
